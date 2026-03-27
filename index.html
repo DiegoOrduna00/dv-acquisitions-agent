@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>DV Acquisitions Agent</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #080b12; color: #e2e8f0; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; height: 100vh; }
+#topbar { background: #0c1018; border-bottom: 1px solid #1a2035; padding: 12px 20px; display: flex; align-items: center; gap: 10px; }
+#logo { width: 34px; height: 34px; border-radius: 8px; background: linear-gradient(135deg,#1d4ed8,#7c3aed); display:flex; align-items:center; justify-content:center; font-size:16px; }
+#appname { font-weight:600; font-size:15px; }
+#appsub { color:#475569; font-size:11px; }
+#newbtn { margin-left:auto; background:transparent; border:1px solid #1a2035; color:#475569; padding:5px 14px; border-radius:7px; cursor:pointer; font-size:12px; }
+#newbtn:hover { color:#a5b4fc; border-color:#2d3a5a; }
+#gate { margin:20px; padding:20px; background:#0f1320; border:1px solid #2d3a5a; border-radius:12px; }
+#gate h3 { color:#a5b4fc; font-size:14px; margin-bottom:8px; }
+#gate p { color:#475569; font-size:12px; margin-bottom:12px; line-height:1.6; }
+#keyrow { display:flex; gap:8px; }
+#keyinput { flex:1; background:#080b12; border:1px solid #1a2035; border-radius:8px; padding:9px 12px; color:#e2e8f0; font-size:13px; outline:none; }
+#keyinput:focus { border-color:#2d3a5a; }
+#keybtn { background:linear-gradient(135deg,#1d4ed8,#7c3aed); border:none; border-radius:8px; padding:0 18px; color:white; cursor:pointer; font-size:13px; font-weight:600; }
+#errmsg { color:#ef4444; font-size:12px; margin-top:8px; display:none; }
+#app { display:none; flex:1; flex-direction:column; overflow:hidden; }
+#connected { margin:8px 20px; padding:6px 12px; background:#0a1a0f; border:1px solid #14532d40; border-radius:8px; font-size:11px; color:#4ade80; display:flex; justify-content:space-between; }
+#changekey { background:none; border:none; color:#475569; cursor:pointer; font-size:11px; }
+#chatarea { display:flex; flex:1; overflow:hidden; }
+#messages { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px; }
+#messages::-webkit-scrollbar { width:3px; }
+#messages::-webkit-scrollbar-thumb { background:#1e2540; border-radius:2px; }
+.row { display:flex; gap:8px; align-items:flex-end; }
+.row.user { justify-content:flex-end; }
+.av { width:28px; height:28px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; }
+.av.a { background:linear-gradient(135deg,#1d4ed8,#7c3aed); }
+.av.u { background:#1e2540; border:1px solid #1a2035; }
+.bub { max-width:75%; padding:10px 13px; font-size:13px; line-height:1.6; color:#cbd5e1; }
+.bub.a { background:#111827; border:1px solid #1a2035; border-radius:4px 13px 13px 13px; }
+.bub.u { background:#1e2d50; border:1px solid #2d4a7a; border-radius:13px 13px 4px 13px; }
+.bub.e { background:#1f0f0f; border:1px solid #7f1d1d; color:#fca5a5; border-radius:4px 13px 13px 13px; }
+.dots span { width:6px; height:6px; border-radius:50%; background:#7c3aed; display:inline-block; margin:0 2px; animation:pulse 1.2s ease-in-out infinite; }
+.dots span:nth-child(2){animation-delay:.2s} .dots span:nth-child(3){animation-delay:.4s}
+@keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+#inputbar { padding:12px 16px; border-top:1px solid #1a2035; display:flex; gap:8px; }
+#msginput { flex:1; background:#0f1320; border:1px solid #1a2035; border-radius:9px; padding:9px 13px; color:#e2e8f0; font-size:13px; outline:none; resize:none; line-height:1.5; font-family:inherit; }
+#msginput:focus { border-color:#2d3a5a; }
+#sendbtn { background:linear-gradient(135deg,#1d4ed8,#7c3aed); border:none; border-radius:9px; padding:0 16px; color:white; cursor:pointer; font-size:20px; }
+#sendbtn:disabled { opacity:.35; cursor:not-allowed; }
+#sidebar { width:260px; background:#0c1018; border-left:1px solid #1a2035; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:12px; }
+#sidebar::-webkit-scrollbar{width:3px;}
+.slabel { font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:#334155; margin-bottom:6px; font-weight:600; }
+#briefcard { background:#080d18; border:1px solid #1e3a5f; border-radius:10px; overflow:hidden; display:none; }
+#briefhead { background:linear-gradient(135deg,#1e3a5f,#0f2040); padding:11px 14px; }
+#brieftag { font-size:10px; color:#60a5fa; letter-spacing:.08em; text-transform:uppercase; margin-bottom:2px; }
+#briefname { font-size:13px; font-weight:600; color:#e2e8f0; }
+#bookedbadge { background:#22c55e20; border:1px solid #22c55e40; color:#22c55e; font-size:10px; font-weight:700; padding:3px 8px; border-radius:14px; margin-top:5px; display:inline-block; }
+#briefrows { padding:9px 14px; }
+.br { display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #0f1a2e; font-size:12px; }
+.br:last-child{border-bottom:none;}
+.bl{color:#475569;} .bv{color:#cbd5e1;text-align:right;max-width:58%;}
+#targetbox { margin:8px 14px 14px; padding:10px 12px; background:#0f2040; border:1px solid #1e3a5f; border-radius:8px; }
+#targetlbl { font-size:10px; color:#60a5fa; letter-spacing:.08em; text-transform:uppercase; margin-bottom:4px; }
+#targetarv { font-size:12px; color:#93c5fd; margin-bottom:2px; }
+#targetoffer { font-size:12px; color:#7dd3fc; }
+#briefph { background:#0f1117; border:1px dashed #1a2035; border-radius:10px; padding:18px 12px; text-align:center; color:#334155; font-size:12px; line-height:1.7; }
+.qr { display:block; width:100%; text-align:left; background:#0c1018; border:1px solid #1a2035; border-radius:7px; padding:7px 10px; color:#64748b; font-size:11px; font-family:inherit; cursor:pointer; margin-bottom:5px; transition:all .15s; line-height:1.4; }
+.qr:hover{color:#a5b4fc;border-color:#2d3a5a;background:#111827;}
+#howbox { background:#0f1117; border:1px solid #1a2035; border-radius:10px; padding:12px; }
+.hw { display:flex; gap:8px; margin-bottom:7px; font-size:11px; color:#64748b; }
+.hw:last-child{margin-bottom:0;}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div id="logo">🏗</div>
+  <div><div id="appname">DV Acquisitions</div><div id="appsub">Appointment booking assistant · Houston, TX</div></div>
+  <button id="newbtn" onclick="reset()">New lead</button>
+</div>
+
+<div id="gate">
+  <h3>🔑 Enter your Anthropic API key</h3>
+  <p>Your key stays on your computer only — never sent anywhere except directly to Anthropic to power the AI responses.</p>
+  <div id="keyrow">
+    <input id="keyinput" type="password" placeholder="sk-ant-api03-..." />
+    <button id="keybtn" onclick="connect()">Connect →</button>
+  </div>
+  <div id="errmsg"></div>
+</div>
+
+<div id="app">
+  <div id="connected">
+    <span>✓ Connected — agent is live</span>
+    <button id="changekey" onclick="disconnect()">Change key</button>
+  </div>
+  <div id="chatarea">
+    <div style="flex:1;display:flex;flex-direction:column;border-right:1px solid #1a2035;">
+      <div style="padding:6px 16px;background:#0a1020;border-bottom:1px solid #1a2035;font-size:11px;color:#60a5fa;">
+        🎯 Practice mode — type as the seller. Agent qualifies and books a call with Diego.
+      </div>
+      <div id="messages"></div>
+      <div id="inputbar">
+        <textarea id="msginput" rows="2" placeholder="Type as the seller… (Enter to send)"></textarea>
+        <button id="sendbtn" onclick="send()">→</button>
+      </div>
+    </div>
+    <div id="sidebar">
+      <div id="briefcard">
+        <div id="briefhead">
+          <div id="brieftag">Call brief ready</div>
+          <div id="briefname">—</div>
+          <div id="bookedbadge">📞 CALL BOOKED</div>
+        </div>
+        <div id="briefrows"></div>
+        <div id="targetbox">
+          <div id="targetlbl">Diego's target for the call</div>
+          <div id="targetarv"></div>
+          <div id="targetoffer"></div>
+        </div>
+      </div>
+      <div id="briefph">📋 Once a call is booked your brief appears here with seller info and target offer range.</div>
+      <div id="qrsection">
+        <div class="slabel">Quick seller replies</div>
+        <div id="qrbox"></div>
+      </div>
+      <div id="howbox">
+        <div class="slabel">How this works</div>
+        <div class="hw"><span>🎯</span>Agent qualifies the seller</div>
+        <div class="hw"><span>📅</span>Books a call with Diego</div>
+        <div class="hw"><span>📋</span>Generates your call brief</div>
+        <div class="hw"><span>📞</span>You call knowing the numbers</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SYSTEM = `You are a friendly acquisition assistant for DV Acquisitions, a real estate company in Houston TX run by Diego. Your only job is to qualify sellers and book a 15-minute call with Diego. Ask ONE question at a time. Keep every message 2-3 sentences max. Sound like a real human texting. Never mention ARV, MAO, formulas, or make any offer. Collect in order: name, address, motivation, timeline, condition, asking price, mortgage balance. Then book the call. When confirmed add at end: [LEAD name=X address=X motivation=X timeline=X condition=X asking=X owed=X calltime=X]`;
+
+const QUICK = ["Hi I want to sell my house","I inherited a property","I'm behind on payments","House needs a lot of work","Asking around $140,000","I owe about $75,000","Need to close in 30 days","Mornings work best","Tomorrow at 10am works"];
+
+let key = "", history = [], busy = false;
+
+function connect() {
+  const v = document.getElementById("keyinput").value.trim();
+  if (!v.startsWith("sk-ant-")) {
+    const e = document.getElementById("errmsg");
+    e.textContent = "❌ Key should start with sk-ant- — check and try again.";
+    e.style.display = "block"; return;
+  }
+  key = v;
+  document.getElementById("gate").style.display = "none";
+  document.getElementById("app").style.display = "flex";
+  document.getElementById("app").style.flexDirection = "column";
+  init();
+}
+
+function disconnect() {
+  key = "";
+  document.getElementById("gate").style.display = "block";
+  document.getElementById("app").style.display = "none";
+  document.getElementById("keyinput").value = "";
+}
+
+function init() {
+  history = [{ role:"assistant", content:"Hey! Thanks for reaching out to DV Acquisitions. I'm Diego's assistant — who am I speaking with today?" }];
+  document.getElementById("briefcard").style.display = "none";
+  document.getElementById("briefph").style.display = "block";
+  document.getElementById("qrsection").style.display = "block";
+  renderMsgs();
+  renderQR();
+}
+
+function renderMsgs() {
+  const box = document.getElementById("messages");
+  box.innerHTML = "";
+  history.forEach(m => {
+    const row = document.createElement("div");
+    row.className = "row " + m.role;
+    const clean = (m.content||"").replace(/\[LEAD[^\]]*\]/g,"").trim();
+    const isWaiting = m.role==="assistant" && !clean && busy;
+    if (m.role==="assistant") {
+      row.innerHTML = `<div class="av a">🏗</div><div class="bub ${m.err?'e':'a'}">${isWaiting?'<div class="dots"><span></span><span></span><span></span></div>':(clean||"...")}</div>`;
+    } else {
+      row.innerHTML = `<div class="bub u">${clean}</div><div class="av u">👤</div>`;
+    }
+    box.appendChild(row);
+  });
+  box.scrollTop = box.scrollHeight;
+}
+
+function renderQR() {
+  const box = document.getElementById("qrbox");
+  box.innerHTML = "";
+  QUICK.forEach(q => {
+    const b = document.createElement("button");
+    b.className = "qr"; b.textContent = q;
+    b.onclick = () => send(q);
+    box.appendChild(b);
+  });
+}
+
+async function send(pre) {
+  if (busy || !key) return;
+  const inp = document.getElementById("msginput");
+  const txt = (pre || inp.value).trim();
+  if (!txt) return;
+  inp.value = "";
+  history.push({ role:"user", content:txt });
+  history.push({ role:"assistant", content:"" });
+  busy = true;
+  document.getElementById("sendbtn").disabled = true;
+  renderMsgs();
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "x-api-key": key,
+        "anthropic-version":"2023-06-01",
+        "anthropic-dangerous-allow-browser":"true"
+      },
+      body: JSON.stringify({
+        model:"claude-haiku-4-5-20251001",
+        max_tokens:300,
+        stream:true,
+        system:SYSTEM,
+        messages: history.slice(0,-1).map(m=>({role:m.role,content:m.content}))
+      })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(()=>({}));
+      if (res.status===401) throw new Error("Invalid API key — create a new one at console.anthropic.com");
+      if (res.status===403) throw new Error("Add credits at console.anthropic.com/billing — just $5 to start");
+      if (res.status===429) throw new Error("Too many requests — wait a moment and try again");
+      throw new Error(err?.error?.message || "API error "+res.status);
+    }
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let full = "";
+    while (true) {
+      const {done,value} = await reader.read();
+      if (done) break;
+      dec.decode(value,{stream:true}).split("\n").filter(l=>l.startsWith("data: ")).forEach(line=>{
+        const j = line.slice(6).trim();
+        if (j==="[DONE]") return;
+        try {
+          const e = JSON.parse(j);
+          if (e.type==="content_block_delta"&&e.delta?.text) {
+            full += e.delta.text;
+            history[history.length-1].content = full;
+            renderMsgs();
+          }
+        } catch(_){}
+      });
+    }
+    const m = full.match(/\[LEAD([^\]]+)\]/);
+    if (m) showBrief(m[1]);
+  } catch(e) {
+    history[history.length-1].content = "⚠️ "+e.message;
+    history[history.length-1].err = true;
+    renderMsgs();
+  }
+  busy = false;
+  document.getElementById("sendbtn").disabled = false;
+  document.getElementById("msginput").focus();
+}
+
+function showBrief(raw) {
+  const get = k => { const r = raw.match(new RegExp(k+"=([^=\\[\\]]+?)(?=\\s+\\w+=|$)")); return r?r[1].trim():null; };
+  const lead = { name:get("name"), address:get("address"), motivation:get("motivation"), timeline:get("timeline"), condition:get("condition"), asking:get("asking"), owed:get("owed"), calltime:get("calltime") };
+  document.getElementById("briefph").style.display = "none";
+  document.getElementById("qrsection").style.display = "none";
+  document.getElementById("briefcard").style.display = "block";
+  document.getElementById("briefname").textContent = (lead.name||"Seller")+" — "+(lead.calltime||"TBD");
+  const fmt = n => { const v=parseFloat(n); return isNaN(v)?(n||"—"):"$"+Math.round(v).toLocaleString(); };
+  document.getElementById("briefrows").innerHTML = [["Property",lead.address],["Motivation",lead.motivation],["Timeline",lead.timeline],["Condition",lead.condition],["Asking",fmt(lead.asking)],["Mortgage",fmt(lead.owed)],["Call time",lead.calltime]].filter(r=>r[1]).map(([l,v])=>`<div class="br"><span class="bl">${l}</span><span class="bv">${v}</span></div>`).join("");
+  const a = parseFloat(lead.asking);
+  if (!isNaN(a)) {
+    const lo=Math.round(a/0.65/1000)*1000, hi=Math.round(a/0.55/1000)*1000;
+    document.getElementById("targetarv").textContent = `Est. ARV: $${lo.toLocaleString()} – $${hi.toLocaleString()}`;
+    document.getElementById("targetoffer").textContent = `Target offer: $${Math.round(lo*.68/1000).toLocaleString()}k – $${Math.round(lo*.74/1000).toLocaleString()}k`;
+  }
+}
+
+function reset() { if(key) init(); }
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("msginput").addEventListener("keydown", e => { if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();} });
+  document.getElementById("keyinput").addEventListener("keydown", e => { if(e.key==="Enter") connect(); });
+});
+</script>
+</body>
+</html>
