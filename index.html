@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html>
 <head>
 <title>DV Acquisitions Agent</title>
@@ -68,23 +68,23 @@ body { background: #080b12; color: #e2e8f0; font-family: 'Segoe UI', sans-serif;
 </style>
 </head>
 <body>
-
+ 
 <div id="topbar">
   <div id="logo">🏗</div>
   <div><div id="appname">DV Acquisitions</div><div id="appsub">Appointment booking assistant · Houston, TX</div></div>
-  <button id="newbtn" onclick="reset()">New lead</button>
+  <button id="newbtn" onclick="resetChat()">New lead</button>
 </div>
-
+ 
 <div id="gate">
   <h3>🔑 Enter your Anthropic API key</h3>
-  <p>Your key stays on your computer only — never sent anywhere except directly to Anthropic to power the AI responses.</p>
+  <p>Your key is used only to power the AI responses — never stored anywhere.</p>
   <div id="keyrow">
     <input id="keyinput" type="password" placeholder="sk-ant-api03-..." />
     <button id="keybtn" onclick="connect()">Connect →</button>
   </div>
   <div id="errmsg"></div>
 </div>
-
+ 
 <div id="app">
   <div id="connected">
     <span>✓ Connected — agent is live</span>
@@ -130,19 +130,19 @@ body { background: #080b12; color: #e2e8f0; font-family: 'Segoe UI', sans-serif;
     </div>
   </div>
 </div>
-
+ 
 <script>
 const SYSTEM = `You are a friendly acquisition assistant for DV Acquisitions, a real estate company in Houston TX run by Diego. Your only job is to qualify sellers and book a 15-minute call with Diego. Ask ONE question at a time. Keep every message 2-3 sentences max. Sound like a real human texting. Never mention ARV, MAO, formulas, or make any offer. Collect in order: name, address, motivation, timeline, condition, asking price, mortgage balance. Then book the call. When confirmed add at end: [LEAD name=X address=X motivation=X timeline=X condition=X asking=X owed=X calltime=X]`;
-
+ 
 const QUICK = ["Hi I want to sell my house","I inherited a property","I'm behind on payments","House needs a lot of work","Asking around $140,000","I owe about $75,000","Need to close in 30 days","Mornings work best","Tomorrow at 10am works"];
-
+ 
 let key = "", history = [], busy = false;
-
+ 
 function connect() {
   const v = document.getElementById("keyinput").value.trim();
   if (!v.startsWith("sk-ant-")) {
     const e = document.getElementById("errmsg");
-    e.textContent = "❌ Key should start with sk-ant- — check and try again.";
+    e.textContent = "Key should start with sk-ant- — check and try again.";
     e.style.display = "block"; return;
   }
   key = v;
@@ -151,14 +151,14 @@ function connect() {
   document.getElementById("app").style.flexDirection = "column";
   init();
 }
-
+ 
 function disconnect() {
   key = "";
   document.getElementById("gate").style.display = "block";
   document.getElementById("app").style.display = "none";
   document.getElementById("keyinput").value = "";
 }
-
+ 
 function init() {
   history = [{ role:"assistant", content:"Hey! Thanks for reaching out to DV Acquisitions. I'm Diego's assistant — who am I speaking with today?" }];
   document.getElementById("briefcard").style.display = "none";
@@ -167,7 +167,7 @@ function init() {
   renderMsgs();
   renderQR();
 }
-
+ 
 function renderMsgs() {
   const box = document.getElementById("messages");
   box.innerHTML = "";
@@ -185,7 +185,7 @@ function renderMsgs() {
   });
   box.scrollTop = box.scrollHeight;
 }
-
+ 
 function renderQR() {
   const box = document.getElementById("qrbox");
   box.innerHTML = "";
@@ -196,7 +196,7 @@ function renderQR() {
     box.appendChild(b);
   });
 }
-
+ 
 async function send(pre) {
   if (busy || !key) return;
   const inp = document.getElementById("msginput");
@@ -209,18 +209,15 @@ async function send(pre) {
   document.getElementById("sendbtn").disabled = true;
   renderMsgs();
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
+    const res = await fetch("/api/chat", {
       method:"POST",
       headers:{
         "Content-Type":"application/json",
-        "x-api-key": key,
-        "anthropic-version":"2023-06-01",
-        "anthropic-dangerous-allow-browser":"true"
+        "x-api-key": key
       },
       body: JSON.stringify({
         model:"claude-haiku-4-5-20251001",
         max_tokens:300,
-        stream:true,
         system:SYSTEM,
         messages: history.slice(0,-1).map(m=>({role:m.role,content:m.content}))
       })
@@ -228,29 +225,14 @@ async function send(pre) {
     if (!res.ok) {
       const err = await res.json().catch(()=>({}));
       if (res.status===401) throw new Error("Invalid API key — create a new one at console.anthropic.com");
-      if (res.status===403) throw new Error("Add credits at console.anthropic.com/billing — just $5 to start");
+      if (res.status===403) throw new Error("Add $5 credits at console.anthropic.com/billing");
       if (res.status===429) throw new Error("Too many requests — wait a moment and try again");
       throw new Error(err?.error?.message || "API error "+res.status);
     }
-    const reader = res.body.getReader();
-    const dec = new TextDecoder();
-    let full = "";
-    while (true) {
-      const {done,value} = await reader.read();
-      if (done) break;
-      dec.decode(value,{stream:true}).split("\n").filter(l=>l.startsWith("data: ")).forEach(line=>{
-        const j = line.slice(6).trim();
-        if (j==="[DONE]") return;
-        try {
-          const e = JSON.parse(j);
-          if (e.type==="content_block_delta"&&e.delta?.text) {
-            full += e.delta.text;
-            history[history.length-1].content = full;
-            renderMsgs();
-          }
-        } catch(_){}
-      });
-    }
+    const data = await res.json();
+    const full = data.content?.[0]?.text || "";
+    history[history.length-1].content = full;
+    renderMsgs();
     const m = full.match(/\[LEAD([^\]]+)\]/);
     if (m) showBrief(m[1]);
   } catch(e) {
@@ -262,7 +244,7 @@ async function send(pre) {
   document.getElementById("sendbtn").disabled = false;
   document.getElementById("msginput").focus();
 }
-
+ 
 function showBrief(raw) {
   const get = k => { const r = raw.match(new RegExp(k+"=([^=\\[\\]]+?)(?=\\s+\\w+=|$)")); return r?r[1].trim():null; };
   const lead = { name:get("name"), address:get("address"), motivation:get("motivation"), timeline:get("timeline"), condition:get("condition"), asking:get("asking"), owed:get("owed"), calltime:get("calltime") };
@@ -279,9 +261,9 @@ function showBrief(raw) {
     document.getElementById("targetoffer").textContent = `Target offer: $${Math.round(lo*.68/1000).toLocaleString()}k – $${Math.round(lo*.74/1000).toLocaleString()}k`;
   }
 }
-
-function reset() { if(key) init(); }
-
+ 
+function resetChat() { if(key) init(); }
+ 
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("msginput").addEventListener("keydown", e => { if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();} });
   document.getElementById("keyinput").addEventListener("keydown", e => { if(e.key==="Enter") connect(); });
