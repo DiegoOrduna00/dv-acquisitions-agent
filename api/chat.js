@@ -12,11 +12,23 @@ export default async function handler(req, res) {
         "x-api-key": req.headers["x-api-key"],
         "anthropic-version": "2023-06-01",
       },
-      body: JSON.stringify(req.body),
+      body: JSON.stringify({
+        model: req.body.model || "claude-haiku-4-5-20251001",
+        max_tokens: req.body.max_tokens || 300,
+        system: req.body.system,
+        messages: req.body.messages,
+      }),
     });
+
     const data = await response.json();
-    res.status(response.status).json(data);
+
+    if (!response.ok) {
+      return res.status(response.status).json(data);
+    }
+
+    res.status(200).json(data);
+
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: { message: e.message } });
   }
 }
