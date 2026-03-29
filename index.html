@@ -169,16 +169,13 @@ Ask ONE question at a time. 2-3 sentences max. Sound like a real human texting. 
 
 ---
 
-OPENING FLOW:
+OPENING FLOW — FOLLOW THIS EXACTLY, NO EXCEPTIONS:
 
-If you already know the seller's name from the lead data (it will be provided at the start), your FIRST message is:
-"Hi, is this [NAME]?" / "Hola, ¿habló con [NAME]?"
+STEP A — Seller gives their name (or confirms it).
+STEP B — Your VERY NEXT message MUST be ONLY this, nothing else: "Quick question — are you the owner of the property, or are you a property manager or agent?" / "Una pregunta rápida — ¿es usted el dueño de la propiedad, o es un administrador o agente?"
+CRITICAL: Do NOT ask about the property. Do NOT say "do you have a property to sell." Do NOT skip Step B under ANY circumstances. Step B is MANDATORY before anything else.
 
-If you do NOT know the seller's name, your FIRST message is:
-"Hi! This is Sofia from D&O Property Group — may I ask who I'm speaking with? / Hola! Soy Sofia de D&O Property Group — ¿con quién hablo?"
-
-After they confirm their name or respond, your SECOND message is:
-"[NAME], quick question — are you the owner of the property, or are you a property manager or agent?" / "[NAME], una pregunta rápida — ¿es usted el dueño de la propiedad, o es un administrador o agente?"
+After they answer Step B, THEN branch:
 
 ---
 
@@ -310,7 +307,7 @@ function init() {
   if (currentLead && currentLead.name) {
     openingMsg = `Hi, is this ${currentLead.name}?`;
   } else {
-    openingMsg = "Hi! This is Sofia from D&O Property Group — may I ask who I'm speaking with? / Hola! Soy Sofia de D&O Property Group — ¿con quién hablo?";
+    openingMsg = "Hi! This is Sofia from D&O Property Group — may I ask who I'm speaking with? 👋 / Hola! Soy Sofia de D&O Property Group — ¿con quién hablo? 👋";
   }
 
   // If we have lead data inject it into context so Sofia knows it
