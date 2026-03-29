@@ -1,78 +1,534 @@
-const Anthropic = require('@anthropic-ai/sdk');
+<!DOCTYPE html>
+<html>
+<head>
+<title>D&O Property Group</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #080b12; color: #e2e8f0; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; height: 100vh; }
+#topbar { background: #0c1018; border-bottom: 1px solid #1a2035; padding: 12px 20px; display: flex; align-items: center; gap: 10px; }
+#logo { width: 34px; height: 34px; border-radius: 8px; background: linear-gradient(135deg,#1d4ed8,#7c3aed); display:flex; align-items:center; justify-content:center; font-size:16px; }
+#appname { font-weight:600; font-size:15px; }
+#appsub { color:#475569; font-size:11px; }
+#newbtn { margin-left:auto; background:transparent; border:1px solid #1a2035; color:#475569; padding:5px 14px; border-radius:7px; cursor:pointer; font-size:12px; }
+#newbtn:hover { color:#a5b4fc; border-color:#2d3a5a; }
+#gate { margin:20px; padding:20px; background:#0f1320; border:1px solid #2d3a5a; border-radius:12px; }
+#gate h3 { color:#a5b4fc; font-size:14px; margin-bottom:8px; }
+#gate p { color:#475569; font-size:12px; margin-bottom:12px; line-height:1.6; }
+#keyrow { display:flex; gap:8px; }
+#keyinput { flex:1; background:#080b12; border:1px solid #1a2035; border-radius:8px; padding:9px 12px; color:#e2e8f0; font-size:13px; outline:none; }
+#keyinput:focus { border-color:#2d3a5a; }
+#keybtn { background:linear-gradient(135deg,#1d4ed8,#7c3aed); border:none; border-radius:8px; padding:0 18px; color:white; cursor:pointer; font-size:13px; font-weight:600; }
+#errmsg { color:#ef4444; font-size:12px; margin-top:8px; display:none; }
+#app { display:none; flex:1; flex-direction:column; overflow:hidden; }
+#connected { margin:8px 20px; padding:6px 12px; background:#0a1a0f; border:1px solid #14532d40; border-radius:8px; font-size:11px; color:#4ade80; display:flex; justify-content:space-between; }
+#changekey { background:none; border:none; color:#475569; cursor:pointer; font-size:11px; }
+#chatarea { display:flex; flex:1; overflow:hidden; }
+#messages { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px; }
+#messages::-webkit-scrollbar { width:3px; }
+#messages::-webkit-scrollbar-thumb { background:#1e2540; border-radius:2px; }
+.row { display:flex; gap:8px; align-items:flex-end; }
+.row.user { justify-content:flex-end; }
+.av { width:28px; height:28px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; }
+.av.a { background:linear-gradient(135deg,#1d4ed8,#7c3aed); }
+.av.u { background:#1e2540; border:1px solid #1a2035; }
+.bub { max-width:75%; padding:10px 13px; font-size:13px; line-height:1.6; color:#cbd5e1; }
+.bub.a { background:#111827; border:1px solid #1a2035; border-radius:4px 13px 13px 13px; }
+.bub.u { background:#1e2d50; border:1px solid #2d4a7a; border-radius:13px 13px 4px 13px; }
+.bub.e { background:#1f0f0f; border:1px solid #7f1d1d; color:#fca5a5; border-radius:4px 13px 13px 13px; }
+.dots span { width:6px; height:6px; border-radius:50%; background:#7c3aed; display:inline-block; margin:0 2px; animation:pulse 1.2s ease-in-out infinite; }
+.dots span:nth-child(2){animation-delay:.2s} .dots span:nth-child(3){animation-delay:.4s}
+@keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+#inputbar { padding:12px 16px; border-top:1px solid #1a2035; display:flex; gap:8px; }
+#msginput { flex:1; background:#0f1320; border:1px solid #1a2035; border-radius:9px; padding:9px 13px; color:#e2e8f0; font-size:13px; outline:none; resize:none; line-height:1.5; font-family:inherit; }
+#msginput:focus { border-color:#2d3a5a; }
+#sendbtn { background:linear-gradient(135deg,#1d4ed8,#7c3aed); border:none; border-radius:9px; padding:0 16px; color:white; cursor:pointer; font-size:20px; }
+#sendbtn:disabled { opacity:.35; cursor:not-allowed; }
+#sidebar { width:280px; background:#0c1018; border-left:1px solid #1a2035; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:10px; }
+#sidebar::-webkit-scrollbar{width:3px;}
+.slabel { font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:#334155; margin-bottom:6px; font-weight:600; }
+#briefcard { background:#080d18; border:1px solid #1e3a5f; border-radius:10px; overflow:hidden; display:none; }
+#briefhead { background:linear-gradient(135deg,#1e3a5f,#0f2040); padding:11px 14px; }
+#brieftag { font-size:10px; color:#60a5fa; letter-spacing:.08em; text-transform:uppercase; margin-bottom:2px; }
+#briefname { font-size:13px; font-weight:600; color:#e2e8f0; }
+#bookedbadge { font-size:10px; font-weight:700; padding:3px 8px; border-radius:14px; margin-top:5px; display:inline-block; }
+.badge-call { background:#22c55e20; border:1px solid #22c55e40; color:#22c55e; }
+.badge-text { background:#f59e0b20; border:1px solid #f59e0b40; color:#f59e0b; }
+.badge-urgent { background:#ef444420; border:1px solid #ef444440; color:#ef4444; }
+.badge-agent { background:#a855f720; border:1px solid #a855f740; color:#a855f7; }
+#briefrows { padding:9px 14px; }
+.br { display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #0f1a2e; font-size:12px; }
+.br:last-child{border-bottom:none;}
+.bl{color:#475569;} .bv{color:#cbd5e1;text-align:right;max-width:58%;}
+#calcbox { margin:0 14px 14px; padding:10px 12px; background:#0a0f1a; border:1px solid #1e3a5f; border-radius:8px; }
+.calc-title { font-size:10px; color:#60a5fa; letter-spacing:.08em; text-transform:uppercase; margin-bottom:8px; }
+.calc-row { display:flex; justify-content:space-between; padding:4px 0; font-size:12px; }
+.calc-label { color:#475569; }
+.calc-val { color:#cbd5e1; font-weight:500; }
+.calc-val.hot { color:#22c55e; font-weight:700; }
+.calc-val.warm { color:#f59e0b; font-weight:700; }
+.calc-val.thin { color:#94a3b8; font-weight:700; }
+.calc-val.dead { color:#ef4444; font-weight:700; }
+.calc-divider { border:none; border-top:1px solid #1a2035; margin:6px 0; }
+#briefph { background:#0f1117; border:1px dashed #1a2035; border-radius:10px; padding:18px 12px; text-align:center; color:#334155; font-size:12px; line-height:1.7; }
+.qr { display:block; width:100%; text-align:left; background:#0c1018; border:1px solid #1a2035; border-radius:7px; padding:7px 10px; color:#64748b; font-size:11px; font-family:inherit; cursor:pointer; margin-bottom:5px; transition:all .15s; line-height:1.4; }
+.qr:hover{color:#a5b4fc;border-color:#2d3a5a;background:#111827;}
+#howbox { background:#0f1117; border:1px solid #1a2035; border-radius:10px; padding:12px; }
+.hw { display:flex; gap:8px; margin-bottom:7px; font-size:11px; color:#64748b; }
+.hw:last-child{margin-bottom:0;}
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+/* Lead loader styles */
+#leadloader { background:#0f1320; border:1px solid #2d3a5a; border-radius:10px; padding:12px; margin-bottom:10px; }
+#leadloader .slabel { margin-bottom:8px; }
+#leadfile { display:none; }
+#loadleadbtn { width:100%; background:#0c1018; border:1px dashed #2d3a5a; border-radius:7px; padding:8px; color:#475569; font-size:11px; cursor:pointer; text-align:center; font-family:inherit; }
+#loadleadbtn:hover { color:#a5b4fc; border-color:#4a5a8a; }
+#leadstatus { font-size:11px; color:#4ade80; margin-top:6px; display:none; }
+#leadcount { font-size:10px; color:#475569; margin-top:3px; }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div id="logo">&#127959;</div>
+  <div><div id="appname">D&O Property Group</div><div id="appsub">AI Acquisition Agent · Houston, TX</div></div>
+  <button id="newbtn" onclick="resetChat()">New lead</button>
+</div>
+
+<div id="gate">
+  <h3>&#128273; Enter your Anthropic API key</h3>
+  <p>Your key powers Sofia — never stored anywhere outside this browser.</p>
+  <div id="keyrow">
+    <input id="keyinput" type="password" placeholder="sk-ant-api03-..." />
+    <button id="keybtn" onclick="connect()">Connect</button>
+  </div>
+  <div id="errmsg"></div>
+</div>
+
+<div id="app">
+  <div id="connected">
+    <span>&#10003; Sofia is live · EN / ES</span>
+    <button id="changekey" onclick="disconnect()">Change key</button>
+  </div>
+  <div id="chatarea">
+    <div style="flex:1;display:flex;flex-direction:column;border-right:1px solid #1a2035;">
+      <div style="padding:6px 16px;background:#0a1020;border-bottom:1px solid #1a2035;font-size:11px;color:#60a5fa;">
+        &#127919; Practice mode — type as the seller in English or Spanish. Sofia auto-detects.
+      </div>
+      <div id="messages"></div>
+      <div id="inputbar">
+        <textarea id="msginput" rows="2" placeholder="Type as the seller… English or Spanish (Enter to send)"></textarea>
+        <button id="sendbtn" onclick="send()">&#8594;</button>
+      </div>
+    </div>
+    <div id="sidebar">
+
+      <!-- Lead Loader -->
+      <div id="leadloader">
+        <div class="slabel">&#128196; Load lead list (CSV)</div>
+        <button id="loadleadbtn" onclick="document.getElementById('leadfile').click()">&#8593; Upload CSV from DealMachine</button>
+        <input type="file" id="leadfile" accept=".csv" onchange="loadCSV(event)" />
+        <div id="leadstatus"></div>
+        <div id="leadcount"></div>
+      </div>
+
+      <div id="briefcard">
+        <div id="briefhead">
+          <div id="brieftag">Lead brief</div>
+          <div id="briefname">—</div>
+          <div id="bookedbadge" class="badge-call">&#128222; CALL BOOKED</div>
+        </div>
+        <div id="briefrows"></div>
+        <div id="calcbox">
+          <div class="calc-title">Wholesaler analysis</div>
+          <div id="calcrows"></div>
+        </div>
+      </div>
+      <div id="briefph">&#128203; Lead brief and deal analysis appear here once Sofia qualifies the seller.</div>
+      <div id="qrsection">
+        <div class="slabel">Quick seller replies</div>
+        <div id="qrbox"></div>
+      </div>
+      <div id="howbox">
+        <div class="slabel">How this works</div>
+        <div class="hw"><span>&#127919;</span>Sofia qualifies in EN or ES</div>
+        <div class="hw"><span>&#128197;</span>Call or text offer — seller picks</div>
+        <div class="hw"><span>&#128203;</span>Full deal analysis generated</div>
+        <div class="hw"><span>&#9889;</span>Not happy? Diego jumps on fast</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── SYSTEM PROMPT ───────────────────────────────────────────────────────────
+const SYSTEM = `You are Sofia, a friendly acquisition assistant for D&O Property Group, a real estate company in Houston TX run by Diego. Your only job is to qualify sellers and either book a call with Diego OR close a deal over text.
+
+LANGUAGE RULE: Detect the language of the seller's very first message and respond in that exact language for the ENTIRE conversation. Spanish stays Spanish. English stays English. Never mix. Never ask.
+
+Ask ONE question at a time. 2-3 sentences max. Sound like a real human texting. Never mention ARV, MAO, or formulas to the seller.
+
+---
+
+OPENING FLOW:
+
+If you already know the seller's name from the lead data (it will be provided at the start), your FIRST message is:
+"Hi, is this [NAME]?" / "Hola, ¿habló con [NAME]?"
+
+If you do NOT know the seller's name, your FIRST message is:
+"Hi! This is Sofia from D&O Property Group — may I ask who I'm speaking with? / Hola! Soy Sofia de D&O Property Group — ¿con quién hablo?"
+
+After they confirm their name or respond, your SECOND message is:
+"[NAME], quick question — are you the owner of the property, or are you a property manager or agent?" / "[NAME], una pregunta rápida — ¿es usted el dueño de la propiedad, o es un administrador o agente?"
+
+---
+
+IF OWNER — proceed with full qualification:
+
+STEP 1 - Collect in order: property address (if not already known from lead), motivation for selling, timeline, condition (great/good/needs work/major repairs), asking price, mortgage balance.
+
+STEP 2 - Ask: "This sounds like a great fit! Would you prefer a quick 15-minute phone call with Diego, or would you like me to put together a ballpark offer right here over text?" / "Esto suena muy bien! ¿Prefiere una llamada rápida de 15 minutos con Diego, o le gustaría que le diera un rango de oferta aquí por mensaje?"
+
+STEP 3A - PHONE CALL PATH: Ask mornings or afternoons, confirm specific time, end with "Perfect! Diego will call you at [TIME]. No pressure at all, just a quick chat." / "Perfecto! Diego le llamará a las [HORA]. Sin presión, solo una charla rápida."
+
+STEP 3B - TEXT OFFER PATH:
+- Present offer: "Based on what you've shared, and factoring in repairs and our costs since we buy completely as-is, Diego would likely be in the range of $[MAO_LOW] to $[MAO_HIGH]. Does that range work for you?"
+- Calculate MAO_LOW = asking price x 0.55, MAO_HIGH = asking price x 0.65
+- If seller says YES to range: "Awesome! To get the paperwork started I just need your email address so we can send over the purchase agreement." Then output the LEAD tag.
+- If seller COUNTERS with a higher number: Check if their counter is under MAO_HIGH. If yes say "You know what, we can make [THEIR NUMBER] work. Let me get your email to send the purchase agreement right over." If their counter is too high say "I totally understand, and I wish we could go higher — but [MAX] is honestly the most we can offer given the repairs and our holding costs. Would that work?"
+- If seller is NOT HAPPY with any number: "I completely understand — I never want you to feel pressured. Here is what I can do — let me get Diego on the phone with you as fast as possible. He is motivated to make this work and may have more flexibility than I do over text. What is the best number to reach you, and are you available in the next hour or two?"
+- If seller gives their number for urgent call: Output the LEAD tag immediately with preference=URGENT-CALL and calltime=ASAP.
+
+---
+
+IF AGENT OR PROPERTY MANAGER — switch to business mode immediately:
+
+Say: "Perfect, I work with cash buyers throughout the Houston area. Is the owner open to a cash offer below market value? What would be the best way to reach them or pass along our interest?" / "Perfecto, trabajo con compradores en efectivo en toda el área de Houston. ¿Está el dueño abierto a una oferta en efectivo por debajo del valor de mercado? ¿Cuál sería la mejor forma de contactarle o hacerle llegar nuestro interés?"
+
+Collect: owner contact info or best way to reach decision maker. Then output LEAD tag with preference=AGENT-REFERRAL.
+
+---
+
+When deal confirmed OR urgent call OR agent referral triggered, output at end of message:
+[LEAD name=X address=X motivation=X timeline=X condition=X asking=X owed=X calltime=X preference=call or text or URGENT-CALL or AGENT-REFERRAL email=X]`;
+
+// ─── QUICK REPLIES ────────────────────────────────────────────────────────────
+const QUICK_EN = [
+  "Yes this is me",
+  "I'm the owner",
+  "I'm a property manager",
+  "I inherited a property",
+  "I'm behind on payments",
+  "House needs a lot of work",
+  "Asking around $140,000",
+  "I owe about $75,000",
+  "Need to close in 30 days",
+  "Mornings work best",
+  "I'd prefer an offer over text",
+  "That number doesn't work for me"
+];
+const QUICK_ES = [
+  "Sí, soy yo",
+  "Soy el dueño",
+  "Soy administrador de la propiedad",
+  "Heredé una propiedad",
+  "Estoy atrasado en pagos",
+  "La casa necesita mucho trabajo",
+  "Pido alrededor de $140,000",
+  "Debo como $75,000",
+  "Necesito cerrar en 30 días",
+  "Las mañanas me vienen bien",
+  "Prefiero una oferta por mensaje",
+  "Ese número no me funciona"
+];
 
 const MAKE_WEBHOOK = "https://hook.us2.make.com/nyopjdofnk8r7rnfy5rksj6qbwd9et";
 
-const conversations = {};
+let key = "", history = [], busy = false, lang = "en";
+let leads = [], currentLead = null;
 
-const SYSTEM = `You are Sofia, a friendly acquisition assistant for D&O Property Group, a real estate company in Houston TX run by Diego. Your only job is to qualify sellers and book a 15-minute call with Diego. Ask ONE question at a time. Keep every message 2-3 sentences max. Sound like a real human texting. Never mention ARV, MAO, formulas, or make any offer. Collect in order: name, address, motivation, timeline, condition, asking price, mortgage balance. Then book the call. Confirm a specific time and end with: "Perfect! Diego will call you at [TIME]. No pressure at all, just a quick chat."
+// ─── CSV LOADER ───────────────────────────────────────────────────────────────
+function loadCSV(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const lines = e.target.result.split('\n').filter(l => l.trim());
+    if (lines.length < 2) return;
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g,''));
+    leads = [];
+    for (let i = 1; i < lines.length; i++) {
+      const vals = lines[i].split(',').map(v => v.trim().replace(/"/g,''));
+      const row = {};
+      headers.forEach((h, idx) => { row[h] = vals[idx] || ''; });
+      // Try to find name and address from common DealMachine column names
+      const name = row['owner name'] || row['owner'] || row['contact name'] || row['name'] || '';
+      const address = row['property address'] || row['address'] || row['street address'] || '';
+      const phone = row['phone'] || row['phone number'] || row['mobile'] || '';
+      if (name || address) leads.push({ name, address, phone, raw: row });
+    }
+    document.getElementById('leadstatus').style.display = 'block';
+    document.getElementById('leadstatus').textContent = '✓ Lead list loaded';
+    document.getElementById('leadcount').textContent = leads.length + ' leads ready';
+    // Auto-load first lead
+    if (leads.length > 0) setLead(leads[0]);
+  };
+  reader.readAsText(file);
+}
 
-When call is confirmed output this at the END of your message:
-[LEAD name=X address=X motivation=X timeline=X condition=X asking=X owed=X calltime=X]`;
+function setLead(lead) {
+  currentLead = lead;
+  if (key) init();
+}
 
-export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).end();
+// ─── CORE ─────────────────────────────────────────────────────────────────────
+function connect() {
+  const v = document.getElementById("keyinput").value.trim();
+  if (!v.startsWith("sk-ant-")) {
+    const e = document.getElementById("errmsg");
+    e.textContent = "Key should start with sk-ant- — check and try again.";
+    e.style.display = "block"; return;
+  }
+  key = v;
+  document.getElementById("gate").style.display = "none";
+  document.getElementById("app").style.display = "flex";
+  document.getElementById("app").style.flexDirection = "column";
+  init();
+}
 
-  const from = req.body.From;
-  const message = req.body.Body;
+function disconnect() {
+  key = "";
+  document.getElementById("gate").style.display = "block";
+  document.getElementById("app").style.display = "none";
+  document.getElementById("keyinput").value = "";
+}
 
-  if (!conversations[from]) {
-    conversations[from] = [];
+function init() {
+  lang = "en";
+
+  // Build opening message based on whether we have a lead loaded
+  let openingMsg = "";
+  if (currentLead && currentLead.name) {
+    openingMsg = `Hi, is this ${currentLead.name}?`;
+  } else {
+    openingMsg = "Hi! This is Sofia from D&O Property Group — may I ask who I'm speaking with? / Hola! Soy Sofia de D&O Property Group — ¿con quién hablo?";
   }
 
-  conversations[from].push({ role: "user", content: message });
+  // If we have lead data inject it into context so Sofia knows it
+  let leadContext = "";
+  if (currentLead) {
+    leadContext = `\n\n[LEAD DATA LOADED: name="${currentLead.name}" address="${currentLead.address}" phone="${currentLead.phone}". Use this info naturally — confirm name first, then reference the address when asking about the property.]`;
+  }
 
+  history = [
+    { role:"assistant", content: openingMsg }
+  ];
+
+  // Store lead context to inject into system prompt
+  window._leadContext = leadContext;
+
+  document.getElementById("briefcard").style.display = "none";
+  document.getElementById("briefph").style.display = "block";
+  document.getElementById("qrsection").style.display = "block";
+  renderMsgs();
+  renderQR();
+}
+
+function detectLang(text) {
+  const sw = ["hola","quiero","vender","casa","herede","necesito","pido","debo","manana","mañana","atrasado","gracias","tengo","precio","cuanto","propiedad","vendiendo","quisiera","estoy","puedo","ese","numero","soy","dueño","dueno","sí","si","administrador"];
+  return sw.some(w => text.toLowerCase().includes(w)) ? "es" : "en";
+}
+
+function getRepairCost(condition) {
+  if (!condition) return 25000;
+  const c = condition.toLowerCase();
+  if (c.includes("great")) return 0;
+  if (c.includes("good")) return 10000;
+  if (c.includes("major")) return 45000;
+  return 25000;
+}
+
+function calcDeal(asking, condition, owed) {
+  const a = parseFloat(asking) || 0;
+  const o = parseFloat(owed) || 0;
+  const repairs = getRepairCost(condition);
+  const arvLow = Math.round(a / 0.65 / 1000) * 1000;
+  const arvHigh = Math.round(a / 0.55 / 1000) * 1000;
+  const mao = Math.round(arvLow * 0.70) - repairs;
+  const offerLow = Math.round(mao * 0.68 / 1000) * 1000;
+  const offerHigh = Math.round(mao * 0.74 / 1000) * 1000;
+  const assignFee = Math.max(0, Math.round((mao - a) * 0.6 / 1000) * 1000);
+  const equity = a - o;
+  const spread = mao - a;
+  let score, scoreClass;
+  if (spread > 20000) { score = "HOT 🔥"; scoreClass = "hot"; }
+  else if (spread > 5000) { score = "WARM"; scoreClass = "warm"; }
+  else if (spread >= 0) { score = "THIN"; scoreClass = "thin"; }
+  else { score = "DEAD"; scoreClass = "dead"; }
+  return { arvLow, arvHigh, mao, offerLow, offerHigh, assignFee, repairs, equity, spread, score, scoreClass };
+}
+
+function fmt(n) {
+  const v = parseFloat(n);
+  if (isNaN(v)) return "—";
+  if (v === 0) return "$0";
+  return "$" + Math.round(v).toLocaleString();
+}
+
+function renderMsgs() {
+  const box = document.getElementById("messages");
+  box.innerHTML = "";
+  history.forEach(m => {
+    const row = document.createElement("div");
+    row.className = "row " + m.role;
+    const clean = (m.content||"").replace(/\[LEAD[^\]]*\]/g,"").trim();
+    const isWaiting = m.role==="assistant" && !clean && busy;
+    if (m.role==="assistant") {
+      row.innerHTML = `<div class="av a">&#127959;</div><div class="bub ${m.err?'e':'a'}">${isWaiting?'<div class="dots"><span></span><span></span><span></span></div>':(clean||"...")}</div>`;
+    } else {
+      row.innerHTML = `<div class="bub u">${clean}</div><div class="av u">&#128100;</div>`;
+    }
+    box.appendChild(row);
+  });
+  box.scrollTop = box.scrollHeight;
+}
+
+function renderQR() {
+  const box = document.getElementById("qrbox");
+  box.innerHTML = "";
+  const replies = lang === "es" ? QUICK_ES : QUICK_EN;
+  replies.forEach(q => {
+    const b = document.createElement("button");
+    b.className = "qr"; b.textContent = q;
+    b.onclick = () => send(q);
+    box.appendChild(b);
+  });
+}
+
+async function send(pre) {
+  if (busy || !key) return;
+  const inp = document.getElementById("msginput");
+  const txt = (pre || inp.value).trim();
+  if (!txt) return;
+  inp.value = "";
+  if (history.length === 1) { lang = detectLang(txt); renderQR(); }
+  history.push({ role:"user", content:txt });
+  history.push({ role:"assistant", content:"" });
+  busy = true;
+  document.getElementById("sendbtn").disabled = true;
+  renderMsgs();
   try {
-    const response = await client.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 300,
-      system: SYSTEM,
-      messages: conversations[from],
+    const systemWithLead = SYSTEM + (window._leadContext || "");
+    const res = await fetch("/api/chat", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json", "x-api-key": key },
+      body: JSON.stringify({
+        model:"claude-haiku-4-5-20251001",
+        max_tokens:350,
+        system: systemWithLead,
+        messages: history.slice(0,-1).map(m=>({role:m.role,content:m.content}))
+      })
     });
-
-    const reply = response.content[0].text;
-    conversations[from].push({ role: "assistant", content: reply });
-
-    // Check if lead was booked
-    const leadMatch = reply.match(/\[LEAD([^\]]+)\]/);
-    if (leadMatch) {
-      const raw = leadMatch[1];
+    if (!res.ok) {
+      const err = await res.json().catch(()=>({}));
+      if (res.status===401) throw new Error("Invalid API key");
+      if (res.status===403) throw new Error("Add credits at console.anthropic.com/billing");
+      if (res.status===429) throw new Error("Too many requests — wait a moment");
+      throw new Error(err?.error?.message || "API error "+res.status);
+    }
+    const data = await res.json();
+    const full = data.content?.[0]?.text || "";
+    history[history.length-1].content = full;
+    renderMsgs();
+    const m = full.match(/\[LEAD([^\]]+)\]/);
+    if (m) {
+      const raw = m[1];
       const get = k => { const r = raw.match(new RegExp(k+"=([^=\\[\\]]+?)(?=\\s+\\w+=|$)")); return r?r[1].trim():null; };
       const lead = {
-        date: new Date().toLocaleDateString(),
-        name: get("name"),
-        address: get("address"),
-        motivation: get("motivation"),
-        timeline: get("timeline"),
-        condition: get("condition"),
-        asking: get("asking"),
-        owed: get("owed"),
-        calltime: get("calltime"),
-        phone: from,
+        name:get("name"), address:get("address"), motivation:get("motivation"),
+        timeline:get("timeline"), condition:get("condition"), asking:get("asking"),
+        owed:get("owed"), calltime:get("calltime"), preference:get("preference"), email:get("email")
       };
-
-      // Fire Make webhook
-      await fetch(MAKE_WEBHOOK, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(lead),
+      showBrief(lead);
+      const calc = calcDeal(lead.asking, lead.condition, lead.owed);
+      fetch(MAKE_WEBHOOK, {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ date:new Date().toLocaleDateString(), ...lead, language:lang, deal_score:calc.score })
       });
     }
+  } catch(e) {
+    history[history.length-1].content = "Error: "+e.message;
+    history[history.length-1].err = true;
+    renderMsgs();
+  }
+  busy = false;
+  document.getElementById("sendbtn").disabled = false;
+  document.getElementById("msginput").focus();
+}
 
-    const cleanReply = reply.replace(/\[LEAD[^\]]*\]/g, "").trim();
+function showBrief(lead) {
+  document.getElementById("briefph").style.display = "none";
+  document.getElementById("qrsection").style.display = "none";
+  document.getElementById("briefcard").style.display = "block";
 
-    res.setHeader("Content-Type", "text/xml");
-    res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-  <Message>${cleanReply}</Message>
-</Response>`);
+  const pref = (lead.preference||"").toUpperCase();
+  const isUrgent = pref.includes("URGENT");
+  const isText = pref.includes("TEXT") || pref.includes("TEXTO");
+  const isAgent = pref.includes("AGENT");
+  const badge = document.getElementById("bookedbadge");
 
-  } catch (e) {
-    res.setHeader("Content-Type", "text/xml");
-    res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-  <Message>Hey! We're experiencing a technical issue. Please try again in a moment.</Message>
-</Response>`);
+  if (isUrgent) { badge.textContent = "⚡ URGENT — GET DIEGO ON NOW"; badge.className = "bookedbadge badge-urgent"; }
+  else if (isAgent) { badge.textContent = "🤝 AGENT REFERRAL"; badge.className = "bookedbadge badge-agent"; }
+  else if (isText) { badge.textContent = "✅ TEXT OFFER ACCEPTED"; badge.className = "bookedbadge badge-text"; }
+  else { badge.textContent = "📞 CALL BOOKED"; badge.className = "bookedbadge badge-call"; }
+
+  document.getElementById("briefname").textContent = (lead.name||"Seller") + " — " + (isUrgent ? "CALL ASAP" : (lead.calltime||"TBD"));
+
+  const rows = [
+    ["Property", lead.address],
+    ["Motivation", lead.motivation],
+    ["Timeline", lead.timeline],
+    ["Condition", lead.condition],
+    ["Asking price", fmt(lead.asking)],
+    ["Mortgage owed", fmt(lead.owed)],
+    ["Email", lead.email],
+    ["Call time", isUrgent ? "ASAP — seller is ready NOW" : lead.calltime],
+    ["Preference", isAgent ? "Agent — find owner contact" : isUrgent ? "Urgent call — not happy with offer" : isText ? "Text offer accepted" : "Phone call"],
+  ];
+  document.getElementById("briefrows").innerHTML = rows.filter(r=>r[1]).map(([l,v])=>
+    `<div class="br"><span class="bl">${l}</span><span class="bv" style="${l==='Call time'&&isUrgent?'color:#ef4444;font-weight:700':''}">${v}</span></div>`
+  ).join("");
+
+  if (!isAgent) {
+    document.getElementById("calcbox").style.display = "block";
+    const calc = calcDeal(lead.asking, lead.condition, lead.owed);
+    const calcRows = [
+      ["Est. ARV", `${fmt(calc.arvLow)} – ${fmt(calc.arvHigh)}`],
+      ["Repair estimate", fmt(calc.repairs)],
+      ["MAO (70% rule)", fmt(calc.mao)],
+      ["divider",""],
+      ["Your offer range", `${fmt(calc.offerLow)} – ${fmt(calc.offerHigh)}`],
+      ["Est. assignment fee", fmt(calc.assignFee)],
+      ["Seller equity", fmt(calc.equity)],
+      ["Spread", fmt(calc.spread)],
+      ["divider",""],
+      ["Deal score", calc.score],
+    ];
+    document.getElementById("calcrows").innerHTML = calcRows.map(([l,v]) => {
+      if (l==="divider") return `<hr class="calc-divider">`;
+      const cls = l==="Deal score" ? `calc-val ${calc.scoreClass}` : "calc-val";
+      return `<div class="calc-row"><span class="calc-label">${l}</span><span class="${cls}">${v}</span></div>`;
+    }).join("");
+  } else {
+    document.getElementById("calcbox").style.display = "none";
   }
 }
+
+function resetChat() { if(key) { currentLead = leads.length > 0 ? leads[0] : null; init(); } }
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("msginput").addEventListener("keydown", e => { if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();} });
+  document.getElementById("keyinput").addEventListener("keydown", e => { if(e.key==="Enter") connect(); });
+});
+</script>
+</body>
+</html>
