@@ -374,6 +374,13 @@ async function send(pre) {
 
     renderMsgs();
 
+    // If Sofia has a delayed second message (offer presentation), send it after a pause
+    if (data.delayedReply) {
+      await new Promise(resolve => setTimeout(resolve, data.delayMs || 4000));
+      history.push({ role:"assistant", content: data.delayedReply });
+      renderMsgs();
+    }
+
     if (history.filter(m=>m.role==="user").length===1 && !followUpState.length) {
       initFollowUps(txt.split(" ")[0]);
     }
