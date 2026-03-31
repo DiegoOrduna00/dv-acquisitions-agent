@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/buyers", "destination": "/buyers-intake.html" }
+  ]
+}
