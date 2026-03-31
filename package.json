@@ -1,8 +1,7 @@
-{
-  "name": "d-and-o-property-group",
+{{
+  "name": "dv-acquisitions-agent",
   "version": "1.0.0",
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.20.0",
-    "twilio": "^4.19.0"
+    "@anthropic-ai/sdk": "^0.20.0"
   }
 }
