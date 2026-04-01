@@ -1,445 +1,87 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>D&O Property Group</title>
-<style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: #080b12; color: #e2e8f0; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; height: 100vh; }
-#topbar { background: #0c1018; border-bottom: 1px solid #1a2035; padding: 12px 20px; display: flex; align-items: center; gap: 10px; }
-#logo { width: 34px; height: 34px; border-radius: 8px; background: linear-gradient(135deg,#1d4ed8,#7c3aed); display:flex; align-items:center; justify-content:center; font-size:16px; }
-#appname { font-weight:600; font-size:15px; }
-#appsub { color:#475569; font-size:11px; }
-#newbtn { margin-left:auto; background:transparent; border:1px solid #1a2035; color:#475569; padding:5px 14px; border-radius:7px; cursor:pointer; font-size:12px; }
-#newbtn:hover { color:#a5b4fc; border-color:#2d3a5a; }
-#app { display:flex; flex:1; flex-direction:column; overflow:hidden; }
-#statusbar { margin:8px 20px; padding:6px 12px; background:#0a1a0f; border:1px solid #14532d40; border-radius:8px; font-size:11px; color:#4ade80; display:flex; justify-content:space-between; align-items:center; }
-#chatarea { display:flex; flex:1; overflow:hidden; }
-#messages { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px; }
-#messages::-webkit-scrollbar { width:3px; }
-#messages::-webkit-scrollbar-thumb { background:#1e2540; border-radius:2px; }
-.row { display:flex; gap:8px; align-items:flex-end; }
-.row.user { justify-content:flex-end; }
-.av { width:28px; height:28px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; }
-.av.a { background:linear-gradient(135deg,#1d4ed8,#7c3aed); }
-.av.u { background:#1e2540; border:1px solid #1a2035; }
-.bub { max-width:75%; padding:10px 13px; font-size:13px; line-height:1.6; color:#cbd5e1; }
-.bub.a { background:#111827; border:1px solid #1a2035; border-radius:4px 13px 13px 13px; }
-.bub.u { background:#1e2d50; border:1px solid #2d4a7a; border-radius:13px 13px 4px 13px; }
-.bub.e { background:#1f0f0f; border:1px solid #7f1d1d; color:#fca5a5; border-radius:4px 13px 13px 13px; }
-.dots span { width:6px; height:6px; border-radius:50%; background:#7c3aed; display:inline-block; margin:0 2px; animation:pulse 1.2s ease-in-out infinite; }
-.dots span:nth-child(2){animation-delay:.2s} .dots span:nth-child(3){animation-delay:.4s}
-@keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
-#inputbar { padding:12px 16px; border-top:1px solid #1a2035; display:flex; gap:8px; }
-#msginput { flex:1; background:#0f1320; border:1px solid #1a2035; border-radius:9px; padding:9px 13px; color:#e2e8f0; font-size:13px; outline:none; resize:none; line-height:1.5; font-family:inherit; }
-#msginput:focus { border-color:#2d3a5a; }
-#sendbtn { background:linear-gradient(135deg,#1d4ed8,#7c3aed); border:none; border-radius:9px; padding:0 16px; color:white; cursor:pointer; font-size:20px; }
-#sendbtn:disabled { opacity:.35; cursor:not-allowed; }
-#sidebar { width:280px; background:#0c1018; border-left:1px solid #1a2035; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:10px; }
-#sidebar::-webkit-scrollbar{width:3px;}
-.slabel { font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:#334155; margin-bottom:6px; font-weight:600; }
-#briefcard { background:#080d18; border:1px solid #1e3a5f; border-radius:10px; overflow:hidden; display:none; }
-#briefhead { background:linear-gradient(135deg,#1e3a5f,#0f2040); padding:11px 14px; }
-#brieftag { font-size:10px; color:#60a5fa; letter-spacing:.08em; text-transform:uppercase; margin-bottom:2px; }
-#briefname { font-size:13px; font-weight:600; color:#e2e8f0; }
-#bookedbadge { font-size:10px; font-weight:700; padding:3px 8px; border-radius:14px; margin-top:5px; display:inline-block; }
-.badge-call { background:#22c55e20; border:1px solid #22c55e40; color:#22c55e; }
-.badge-text { background:#f59e0b20; border:1px solid #f59e0b40; color:#f59e0b; }
-.badge-urgent { background:#ef444420; border:1px solid #ef444440; color:#ef4444; }
-.badge-agent { background:#a855f720; border:1px solid #a855f740; color:#a855f7; }
-#briefrows { padding:9px 14px; }
-.br { display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #0f1a2e; font-size:12px; }
-.br:last-child{border-bottom:none;}
-.bl{color:#475569;} .bv{color:#cbd5e1;text-align:right;max-width:58%;}
-#calcbox { margin:0 14px 14px; padding:10px 12px; background:#0a0f1a; border:1px solid #1e3a5f; border-radius:8px; }
-.calc-title { font-size:10px; color:#60a5fa; letter-spacing:.08em; text-transform:uppercase; margin-bottom:8px; }
-.calc-row { display:flex; justify-content:space-between; padding:4px 0; font-size:12px; }
-.calc-label { color:#475569; }
-.calc-val { color:#cbd5e1; font-weight:500; }
-.calc-val.hot { color:#22c55e; font-weight:700; }
-.calc-val.warm { color:#f59e0b; font-weight:700; }
-.calc-val.thin { color:#94a3b8; font-weight:700; }
-.calc-val.dead { color:#ef4444; font-weight:700; }
-.calc-divider { border:none; border-top:1px solid #1a2035; margin:6px 0; }
-#briefph { background:#0f1117; border:1px dashed #1a2035; border-radius:10px; padding:18px 12px; text-align:center; color:#334155; font-size:12px; line-height:1.7; }
-.qr { display:block; width:100%; text-align:left; background:#0c1018; border:1px solid #1a2035; border-radius:7px; padding:7px 10px; color:#64748b; font-size:11px; font-family:inherit; cursor:pointer; margin-bottom:5px; transition:all .15s; line-height:1.4; }
-.qr:hover{color:#a5b4fc;border-color:#2d3a5a;background:#111827;}
-#howbox { background:#0f1117; border:1px solid #1a2035; border-radius:10px; padding:12px; }
-.hw { display:flex; gap:8px; margin-bottom:7px; font-size:11px; color:#64748b; }
-.hw:last-child{margin-bottom:0;}
-#leadloader { background:#0f1320; border:1px solid #2d3a5a; border-radius:10px; padding:12px; }
-#leadfile { display:none; }
-#loadleadbtn { width:100%; background:#0c1018; border:1px dashed #2d3a5a; border-radius:7px; padding:8px; color:#475569; font-size:11px; cursor:pointer; text-align:center; font-family:inherit; }
-#loadleadbtn:hover { color:#a5b4fc; border-color:#4a5a8a; }
-#leadstatus { font-size:11px; color:#4ade80; margin-top:6px; display:none; }
-#leadcount { font-size:10px; color:#475569; margin-top:3px; }
-#followupbox { background:#0f1320; border:1px solid #2d3a5a; border-radius:10px; padding:12px; }
-.fu-item { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid #0f1a2e; font-size:11px; }
-.fu-item:last-child { border-bottom:none; }
-.fu-day { color:#60a5fa; font-weight:600; min-width:40px; }
-.fu-msg { color:#475569; flex:1; padding:0 8px; line-height:1.4; }
-.fu-status { font-size:10px; padding:2px 7px; border-radius:10px; }
-.fu-pending { background:#1e293b; color:#475569; }
-.fu-sent { background:#22c55e20; border:1px solid #22c55e40; color:#22c55e; }
-.fu-replied { background:#f59e0b20; border:1px solid #f59e0b40; color:#f59e0b; }
-#fusimbtn { width:100%; margin-top:8px; background:#0c1018; border:1px solid #2d3a5a; border-radius:7px; padding:7px; color:#475569; font-size:11px; cursor:pointer; font-family:inherit; }
-#fusimbtn:hover { color:#a5b4fc; border-color:#4a5a8a; }
-@keyframes hotpulse { 0%,100%{box-shadow:0 0 0 0 #ef444440} 50%{box-shadow:0 0 0 8px #ef444400} }
-.hot-alert { animation: hotpulse 1.5s ease-in-out infinite; border-color:#ef4444 !important; }
-</style>
-</head>
-<body>
-
-<div id="topbar">
-  <div id="logo">&#127959;</div>
-  <div><div id="appname">D&O Property Group</div><div id="appsub">AI Acquisition Agent · Houston, TX</div></div>
-  <button id="newbtn" onclick="resetChat()">New lead</button>
-</div>
-
-<div id="app">
-  <div id="statusbar">
-    <span>&#10003; Sofia is live · EN / ES</span>
-    <span id="hotbanner" style="color:#ef4444;font-weight:700;display:none;">&#9889; HOT LEAD — DIEGO CALL NOW</span>
-  </div>
-  <div id="chatarea">
-    <div style="flex:1;display:flex;flex-direction:column;border-right:1px solid #1a2035;">
-      <div style="padding:6px 16px;background:#0a1020;border-bottom:1px solid #1a2035;font-size:11px;color:#60a5fa;">
-        &#127919; Practice mode — type as the seller in English or Spanish. Sofia auto-detects.
-      </div>
-      <div id="messages"></div>
-      <div id="inputbar">
-        <textarea id="msginput" rows="2" placeholder="Type as the seller… English or Spanish (Enter to send)"></textarea>
-        <button id="sendbtn" onclick="send()">&#8594;</button>
-      </div>
-    </div>
-    <div id="sidebar">
-      <div id="leadloader">
-        <div class="slabel">&#128196; Load lead list (CSV)</div>
-        <button id="loadleadbtn" onclick="document.getElementById('leadfile').click()">&#8593; Upload CSV from DealMachine</button>
-        <input type="file" id="leadfile" accept=".csv" onchange="loadCSV(event)" />
-        <div id="leadstatus"></div>
-        <div id="leadcount"></div>
-      </div>
-      <div id="briefcard">
-        <div id="briefhead">
-          <div id="brieftag">Lead brief</div>
-          <div id="briefname">—</div>
-          <div id="bookedbadge" class="badge-call">&#128222; CALL BOOKED</div>
-        </div>
-        <div id="briefrows"></div>
-        <div id="calcbox">
-          <div class="calc-title">Wholesaler analysis</div>
-          <div id="calcrows"></div>
-        </div>
-      </div>
-      <div id="briefph">&#128203; Lead brief and deal analysis appear here once Sofia qualifies the seller.</div>
-      <div id="qrsection">
-        <div class="slabel">Quick seller replies</div>
-        <div id="qrbox"></div>
-      </div>
-      <div id="howbox">
-        <div class="slabel">How this works</div>
-        <div class="hw"><span>&#127919;</span>Sofia qualifies in EN or ES</div>
-        <div class="hw"><span>&#128197;</span>Call or text offer — seller picks</div>
-        <div class="hw"><span>&#128203;</span>Full deal analysis generated</div>
-        <div class="hw"><span>&#9889;</span>Hot lead? Diego gets alerted instantly</div>
-      </div>
-      <div id="followupbox" style="display:none;">
-        <div class="slabel">&#9200; Follow-up cadence</div>
-        <div id="fulist"></div>
-        <button id="fusimbtn" onclick="simulateFollowUp()">&#9889; Simulate next follow-up</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
 const MAKE_WEBHOOK = "https://hook.us2.make.com/5hdgapnpzhimd9ktarrovfkkc695krxx";
 
-const QUICK_EN = [
-  "Yes this is me","I'm the owner","I'm a property manager","I inherited a property",
-  "I'm behind on payments","House needs a lot of work","Asking around $140,000",
-  "I owe about $75,000","Need to close in 30 days","Mornings work best",
-  "I'd prefer an offer over text","That number doesn't work for me"
-];
-const QUICK_ES = [
-  "Sí, soy yo","Soy el dueño","Soy administrador de la propiedad","Heredé una propiedad",
-  "Estoy atrasado en pagos","La casa necesita mucho trabajo","Pido alrededor de $140,000",
-  "Debo como $75,000","Necesito cerrar en 30 días","Las mañanas me vienen bien",
-  "Prefiero una oferta por mensaje","Ese número no me funciona"
-];
-const FOLLOWUPS = [
-  { day:2, msg_en:"Hey [NAME]! Just wanted to follow up — still interested in a cash offer? No pressure 🙂", msg_es:"Hola [NAME]! Solo quería hacer seguimiento — ¿sigue interesado en una oferta en efectivo? Sin presión 🙂" },
-  { day:5, msg_en:"Hi [NAME], still open to chatting about your property? We're actively buying in your area.", msg_es:"Hola [NAME], ¿sigue abierto a hablar sobre su propiedad? Estamos comprando activamente en su área." },
-  { day:10, msg_en:"Hey [NAME] — last follow-up from me! If timing ever works, we'd love to make you a cash offer 🤙", msg_es:"Hola [NAME] — último seguimiento! Si alguna vez el momento es adecuado, nos encantaría hacer una oferta 🤙" },
-];
+const SYSTEM = `You are Sofia, a friendly AI acquisition assistant for D&O Property Group, a real estate wholesaling company in Houston TX run by Diego Orduna. You qualify motivated sellers one question at a time.
 
-let history = [], busy = false, lang = "en";
-let leads = [], currentLead = null;
-let followUpState = [], currentSellerName = "";
+LANGUAGE RULE: Detect seller's language from first message. Respond in that language for the entire conversation. Never mix languages.
 
-function initFollowUps(name) {
-  currentSellerName = name || "there";
-  followUpState = FOLLOWUPS.map(f => ({ ...f, status:"pending" }));
-  renderFollowUps();
-  document.getElementById("followupbox").style.display = "block";
-}
+Ask ONE question at a time. Keep messages short — 2-3 sentences max. Sound like a real human texting. Never mention ARV, MAO, or any formulas.
 
-function renderFollowUps() {
-  document.getElementById("fulist").innerHTML = followUpState.map(f => {
-    const msg = (lang==="es" ? f.msg_es : f.msg_en).replace("[NAME]", currentSellerName);
-    const statusLabel = f.status==="sent" ? "Sent" : f.status==="replied" ? "Replied ⚡" : "Pending";
-    const statusClass = f.status==="sent" ? "fu-sent" : f.status==="replied" ? "fu-replied" : "fu-pending";
-    return `<div class="fu-item"><span class="fu-day">Day ${f.day}</span><span class="fu-msg">${msg.substring(0,50)}...</span><span class="fu-status ${statusClass}">${statusLabel}</span></div>`;
-  }).join("");
-}
+OPENING FLOW:
+STEP A: Greet and confirm who you're speaking with.
+STEP B: Ask ONLY: "Quick question — are you the owner of the property, or are you a property manager or agent?"
 
-function simulateFollowUp() {
-  const idx = followUpState.findIndex(f => f.status==="pending");
-  if (idx===-1) { document.getElementById("fusimbtn").textContent="✅ All sent"; document.getElementById("fusimbtn").disabled=true; return; }
-  const msg = (lang==="es" ? followUpState[idx].msg_es : followUpState[idx].msg_en).replace("[NAME]", currentSellerName);
-  followUpState[idx].status = "sent";
-  history.push({ role:"assistant", content:msg });
-  renderMsgs(); renderFollowUps();
-  if (idx===followUpState.length-1) { document.getElementById("fusimbtn").textContent="✅ All sent"; document.getElementById("fusimbtn").disabled=true; }
-}
+IF OWNER: Collect in order: property address, motivation for selling, timeline, condition (great/good/needs work/major repairs), asking price, mortgage balance. Then ask: "Would you prefer a quick 15-minute call with Diego, or would you like me to put together a ballpark offer right here over text?"
 
-function markFollowUpReplied() {
-  const idx = followUpState.findIndex(f => f.status==="sent");
-  if (idx!==-1) {
-    followUpState[idx].status = "replied";
-    renderFollowUps();
-    fetch(MAKE_WEBHOOK, { method:"POST", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ event:"FOLLOW_UP_REPLY", seller:currentSellerName, followup_day:followUpState[idx].day })
-    }).catch(()=>{});
-  }
-}
+PHONE CALL PATH: Confirm time. End with "Perfect! Diego will call you at [TIME]. No pressure at all."
+TEXT OFFER PATH: Offer MAO_LOW = asking x 0.55 to MAO_HIGH = asking x 0.65. Negotiate. Make seller say no at least 3 times before giving up.
+If seller unhappy with numbers: Get Diego on the phone urgently.
 
-function loadCSV(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const lines = e.target.result.split('\n').filter(l => l.trim());
-    if (lines.length < 2) return;
-    const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g,''));
-    leads = [];
-    for (let i=1; i<lines.length; i++) {
-      const vals = lines[i].split(',').map(v => v.trim().replace(/"/g,''));
-      const row = {};
-      headers.forEach((h,idx) => { row[h] = vals[idx] || ''; });
-      const name = row['owner name']||row['owner']||row['contact name']||row['name']||'';
-      const address = row['property address']||row['address']||row['street address']||'';
-      const phone = row['phone']||row['phone number']||row['mobile']||'';
-      if (name||address) leads.push({ name, address, phone, raw:row });
+IF AGENT/MANAGER: Ask if owner open to cash offer below market. Collect contact info. Output LEAD tag with preference=AGENT-REFERRAL.
+
+When deal confirmed output at end of message:
+[LEAD name=X address=X motivation=X timeline=X condition=X asking=X owed=X calltime=X preference=X email=X]`;
+
+module.exports = async function handler(req, res) {
+    if (req.method !== "POST") return res.status(405).end();
+
+    const { messages, leadData } = req.body;
+    if (!messages || !Array.isArray(messages)) return res.status(400).json({ error: "Invalid messages" });
+
+    try {
+          const systemPrompt = leadData
+            ? `${SYSTEM}\n\nLEAD CONTEXT: ${JSON.stringify(leadData)}`
+                  : SYSTEM;
+
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+              method: "POST",
+              headers: {
+                        "Content-Type": "application/json",
+                        "x-api-key": process.env.ANTHROPIC_API_KEY,
+                        "anthropic-version": "2023-06-01"
+              },
+              body: JSON.stringify({
+                        model: "claude-haiku-4-5-20251001",
+                        max_tokens: 300,
+                        system: systemPrompt,
+                        messages: messages
+              })
+      });
+
+      const data = await response.json();
+
+      if (!data.content || !data.content[0]) {
+              return res.status(500).json({ error: "No response from AI" });
+      }
+
+      const reply = data.content[0].text;
+          const isHotAlert = reply.includes("URGENT") || reply.includes("CALL NOW");
+
+      const leadMatch = reply.match(/\[LEAD([^\]]+)\]/);
+          if (leadMatch) {
+                  const raw = leadMatch[1];
+                  const get = k => { const r = raw.match(new RegExp(k + "=([^=\\[\\]]+?)(?=\\s+\\w+=|$)")); return r ? r[1].trim() : null; };
+                  const lead = {
+                            date: new Date().toLocaleDateString(),
+                            name: get("name"), address: get("address"), motivation: get("motivation"),
+                            timeline: get("timeline"), condition: get("condition"), asking: get("asking"),
+                            owed: get("owed"), calltime: get("calltime"), preference: get("preference"), email: get("email"),
+                            source: "web"
+                  };
+                  fetch(MAKE_WEBHOOK, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(lead)
+                  }).catch(() => {});
+          }
+
+      res.status(200).json({
+              reply,
+              isHotAlert,
+              delayedReply: null
+      });
+
+    } catch (e) {
+          console.error("Chat error:", e);
+          res.status(500).json({ error: e.message });
     }
-    document.getElementById('leadstatus').style.display='block';
-    document.getElementById('leadstatus').textContent='✓ Lead list loaded';
-    document.getElementById('leadcount').textContent=leads.length+' leads ready';
-    if (leads.length>0) { currentLead=leads[0]; init(); }
-  };
-  reader.readAsText(file);
-}
-
-function getRepairCost(condition) {
-  if (!condition) return 25000;
-  const c = condition.toLowerCase();
-  if (c.includes("great")) return 0;
-  if (c.includes("good")) return 10000;
-  if (c.includes("major")) return 45000;
-  return 25000;
-}
-
-function calcDeal(asking, condition, owed) {
-  const a = parseFloat(asking)||0, o = parseFloat(owed)||0;
-  const repairs = getRepairCost(condition);
-  const arvLow = Math.round(a/0.65/1000)*1000;
-  const mao = Math.round(arvLow*0.70)-repairs;
-  const offerLow = Math.round(mao*0.68/1000)*1000;
-  const offerHigh = Math.round(mao*0.74/1000)*1000;
-  const assignFee = Math.max(0,Math.round((mao-a)*0.6/1000)*1000);
-  const spread = mao-a;
-  let score, scoreClass;
-  if (spread>20000){score="HOT 🔥";scoreClass="hot";}
-  else if (spread>5000){score="WARM";scoreClass="warm";}
-  else if (spread>=0){score="THIN";scoreClass="thin";}
-  else{score="DEAD";scoreClass="dead";}
-  return { arvLow, mao, offerLow, offerHigh, assignFee, repairs, equity:a-o, spread, score, scoreClass };
-}
-
-function fmt(n) { const v=parseFloat(n); if(isNaN(v))return"—"; if(v===0)return"$0"; return"$"+Math.round(v).toLocaleString(); }
-
-function renderMsgs() {
-  const box = document.getElementById("messages");
-  box.innerHTML = "";
-  history.forEach(m => {
-    const row = document.createElement("div");
-    row.className = "row "+m.role;
-    const clean = (m.content||"").replace(/\[LEAD[^\]]*\]/g,"").trim();
-    const isWaiting = m.role==="assistant" && !clean && busy;
-    if (m.role==="assistant") {
-      row.innerHTML = `<div class="av a">&#127959;</div><div class="bub ${m.err?'e':'a'}">${isWaiting?'<div class="dots"><span></span><span></span><span></span></div>':(clean||"...")}</div>`;
-    } else {
-      row.innerHTML = `<div class="bub u">${clean}</div><div class="av u">&#128100;</div>`;
-    }
-    box.appendChild(row);
-  });
-  box.scrollTop = box.scrollHeight;
-}
-
-function renderQR() {
-  const box = document.getElementById("qrbox");
-  box.innerHTML = "";
-  (lang==="es"?QUICK_ES:QUICK_EN).forEach(q => {
-    const b = document.createElement("button");
-    b.className="qr"; b.textContent=q;
-    b.onclick=()=>send(q);
-    box.appendChild(b);
-  });
-}
-
-function detectLang(text) {
-  const sw=["hola","quiero","vender","casa","herede","necesito","pido","debo","manana","mañana","atrasado","gracias","tengo","precio","cuanto","propiedad","soy","dueño","dueno","sí","administrador"];
-  return sw.some(w=>text.toLowerCase().includes(w))?"es":"en";
-}
-
-function init() {
-  lang = "en";
-  const openingMsg = currentLead && currentLead.name
-    ? `Hi, is this ${currentLead.name}?`
-    : "Hi! This is Sofia from D&O Property Group — may I ask who I'm speaking with? 👋 / Hola! Soy Sofia de D&O Property Group — ¿con quién hablo? 👋";
-  history = [{ role:"assistant", content:openingMsg }];
-  followUpState = []; currentSellerName = "";
-  document.getElementById("briefcard").style.display="none";
-  document.getElementById("briefph").style.display="block";
-  document.getElementById("qrsection").style.display="block";
-  document.getElementById("followupbox").style.display="none";
-  document.getElementById("hotbanner").style.display="none";
-  document.getElementById("briefcard").classList.remove("hot-alert");
-  document.getElementById("fusimbtn").textContent="⚡ Simulate next follow-up";
-  document.getElementById("fusimbtn").disabled=false;
-  renderMsgs(); renderQR();
-}
-
-async function send(pre) {
-  if (busy) return;
-  const inp = document.getElementById("msginput");
-  const txt = (pre||inp.value).trim();
-  if (!txt) return;
-  inp.value = "";
-
-  if (history.length===1) { lang=detectLang(txt); renderQR(); }
-  if (followUpState.some(f=>f.status==="sent")) markFollowUpReplied();
-
-  history.push({ role:"user", content:txt });
-  history.push({ role:"assistant", content:"" });
-  busy = true;
-  document.getElementById("sendbtn").disabled = true;
-  renderMsgs();
-
-  try {
-    // Build messages — CRITICAL: Anthropic requires first message to be "user" role
-    // Strip the opening assistant greeting from API call, only send user/assistant pairs
-    const apiMessages = history
-      .slice(0, -1)
-      .filter(m => m.content && m.content.trim() !== "")
-      .filter((m, idx, arr) => {
-        // Remove leading assistant messages
-        const firstUserIdx = arr.findIndex(x => x.role === "user");
-        return idx >= firstUserIdx;
-      })
-      .map(m => ({ role: m.role, content: m.content }));
-
-    const res = await fetch("/api/chat", {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({
-        messages: apiMessages,
-        leadData: currentLead || null
-      })
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(()=>({}));
-      throw new Error(err?.error || "Server error "+res.status);
-    }
-
-    const data = await res.json();
-    const full = data.reply || "";
-    history[history.length-1].content = full;
-
-    if (data.isHotAlert) {
-      document.getElementById("hotbanner").style.display="block";
-      document.getElementById("briefcard").classList.add("hot-alert");
-    }
-
-    renderMsgs();
-
-    // If Sofia has a delayed second message (offer presentation), send it after a pause
-    if (data.delayedReply) {
-      await new Promise(resolve => setTimeout(resolve, data.delayMs || 4000));
-      history.push({ role:"assistant", content: data.delayedReply });
-      renderMsgs();
-    }
-
-    if (history.filter(m=>m.role==="user").length===1 && !followUpState.length) {
-      initFollowUps(txt.split(" ")[0]);
-    }
-
-    const m = full.match(/\[LEAD([^\]]+)\]/);
-    if (m) {
-      const raw = m[1];
-      const get = k => { const r=raw.match(new RegExp(k+"=([^=\\[\\]]+?)(?=\\s+\\w+=|$)")); return r?r[1].trim():null; };
-      const lead = { name:get("name"), address:get("address"), motivation:get("motivation"), timeline:get("timeline"), condition:get("condition"), asking:get("asking"), owed:get("owed"), calltime:get("calltime"), preference:get("preference"), email:get("email") };
-      showBrief(lead);
-      if (lead.name) { currentSellerName=lead.name; renderFollowUps(); }
-      const calc = calcDeal(lead.asking, lead.condition, lead.owed);
-      fetch(MAKE_WEBHOOK, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ date:new Date().toLocaleDateString(), ...lead, language:lang, deal_score:calc.score }) }).catch(()=>{});
-    }
-
-  } catch(e) {
-    history[history.length-1].content = "Error: "+e.message;
-    history[history.length-1].err = true;
-    renderMsgs();
-  }
-
-  busy = false;
-  document.getElementById("sendbtn").disabled = false;
-  document.getElementById("msginput").focus();
-}
-
-function showBrief(lead) {
-  document.getElementById("briefph").style.display="none";
-  document.getElementById("qrsection").style.display="none";
-  document.getElementById("briefcard").style.display="block";
-  const pref=(lead.preference||"").toUpperCase();
-  const isUrgent=pref.includes("URGENT"), isText=pref.includes("TEXT")||pref.includes("TEXTO"), isAgent=pref.includes("AGENT");
-  const badge=document.getElementById("bookedbadge");
-  if(isUrgent){badge.textContent="⚡ URGENT — GET DIEGO ON NOW";badge.className="bookedbadge badge-urgent";}
-  else if(isAgent){badge.textContent="🤝 AGENT REFERRAL";badge.className="bookedbadge badge-agent";}
-  else if(isText){badge.textContent="✅ TEXT OFFER ACCEPTED";badge.className="bookedbadge badge-text";}
-  else{badge.textContent="📞 CALL BOOKED";badge.className="bookedbadge badge-call";}
-  document.getElementById("briefname").textContent=(lead.name||"Seller")+" — "+(isUrgent?"CALL ASAP":(lead.calltime||"TBD"));
-  const rows=[["Property",lead.address],["Motivation",lead.motivation],["Timeline",lead.timeline],["Condition",lead.condition],["Asking price",fmt(lead.asking)],["Mortgage owed",fmt(lead.owed)],["Email",lead.email],["Call time",isUrgent?"ASAP — seller ready NOW":lead.calltime],["Preference",isAgent?"Agent referral":isUrgent?"URGENT call":isText?"Text offer accepted":"Phone call"]];
-  document.getElementById("briefrows").innerHTML=rows.filter(r=>r[1]).map(([l,v])=>`<div class="br"><span class="bl">${l}</span><span class="bv" style="${l==='Call time'&&isUrgent?'color:#ef4444;font-weight:700':''}">${v}</span></div>`).join("");
-  if(!isAgent){
-    document.getElementById("calcbox").style.display="block";
-    const calc=calcDeal(lead.asking,lead.condition,lead.owed);
-    const calcRows=[["Est. ARV",fmt(calc.arvLow)],["Repair estimate",fmt(calc.repairs)],["MAO (70% rule)",fmt(calc.mao)],["divider",""],["Your offer range",`${fmt(calc.offerLow)} – ${fmt(calc.offerHigh)}`],["Est. assignment fee",fmt(calc.assignFee)],["Seller equity",fmt(calc.equity)],["Spread",fmt(calc.spread)],["divider",""],["Deal score",calc.score]];
-    document.getElementById("calcrows").innerHTML=calcRows.map(([l,v])=>{if(l==="divider")return`<hr class="calc-divider">`;const cls=l==="Deal score"?`calc-val ${calc.scoreClass}`:"calc-val";return`<div class="calc-row"><span class="calc-label">${l}</span><span class="${cls}">${v}</span></div>`;}).join("");
-  } else { document.getElementById("calcbox").style.display="none"; }
-}
-
-function resetChat() {
-  currentLead=leads.length>0?leads[0]:null;
-  followUpState=[]; currentSellerName="";
-  document.getElementById("briefcard").classList.remove("hot-alert");
-  init();
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("msginput").addEventListener("keydown", e=>{ if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();} });
-  init();
-});
-</script>
-</body>
-</html>
+};
