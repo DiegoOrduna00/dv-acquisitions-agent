@@ -1,150 +1,497 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>D&O Property Group</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>D&O Property Group — Sofia AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: #080b12; color: #e2e8f0; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; height: 100vh; }
-#topbar { background: #0c1018; border-bottom: 1px solid #1a2035; padding: 12px 20px; display: flex; align-items: center; gap: 10px; }
-#logo { width: 34px; height: 34px; border-radius: 8px; background: linear-gradient(135deg,#1d4ed8,#7c3aed); display:flex; align-items:center; justify-content:center; font-size:16px; }
-#appname { font-weight:600; font-size:15px; }
-#appsub { color:#475569; font-size:11px; }
-#newbtn { margin-left:auto; background:transparent; border:1px solid #1a2035; color:#475569; padding:5px 14px; border-radius:7px; cursor:pointer; font-size:12px; }
-#newbtn:hover { color:#a5b4fc; border-color:#2d3a5a; }
-#app { display:flex; flex:1; flex-direction:column; overflow:hidden; }
-#statusbar { margin:8px 20px; padding:6px 12px; background:#0a1a0f; border:1px solid #14532d40; border-radius:8px; font-size:11px; color:#4ade80; display:flex; justify-content:space-between; align-items:center; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:          #0b0f0d;
+  --surface:     #101510;
+  --card:        #141a15;
+  --border:      #1e2b20;
+  --border-mid:  #253228;
+  --accent:      #1c3d2c;
+  --accent2:     #2a5a3f;
+  --green:       #22c55e;
+  --red:         #ef4444;
+  --amber:       #f59e0b;
+  --purple:      #a855f7;
+  --gold:        rgba(200,150,12,0.75);
+  --text:        #d4d8d5;
+  --text-muted:  #5a6860;
+  --text-dim:    #3a4840;
+  --user-bg:     #1a2f22;
+  --user-border: #253c2e;
+}
+
+html, body { height: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── TOPBAR ── */
+#topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.logo-mark {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--accent);
+  border: 1px solid var(--border-mid);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 10px;
+  color: rgba(255,255,255,0.9);
+  letter-spacing: 0.03em;
+  flex-shrink: 0;
+}
+
+.brand-name { font-weight: 600; font-size: 14px; color: var(--text); letter-spacing: -0.01em; }
+.brand-sub  { font-size: 11px; color: var(--text-muted); margin-top: 1px; font-weight: 400; }
+
+#newbtn {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid var(--border-mid);
+  color: var(--text-muted);
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 11px;
+  font-family: inherit;
+  font-weight: 500;
+  transition: all 0.15s;
+}
+
+#newbtn:hover { color: var(--text); border-color: var(--accent2); background: rgba(28,61,44,0.2); }
+
+/* ── STATUS BAR ── */
+#statusbar {
+  margin: 8px 16px;
+  padding: 7px 14px;
+  background: rgba(34,197,94,0.04);
+  border: 1px solid rgba(34,197,94,0.12);
+  border-radius: 7px;
+  font-size: 11px;
+  color: var(--green);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.dot {
+  width: 6px; height: 6px;
+  background: var(--green);
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 7px;
+  animation: blink 2s ease-in-out infinite;
+}
+
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+#hotbanner {
+  display: none;
+  color: var(--red);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  animation: hottext 1s ease-in-out infinite;
+}
+
+@keyframes hottext { 0%,100%{opacity:1} 50%{opacity:0.55} }
+
+/* ── LAYOUT ── */
+#app { display:flex; flex:1; overflow:hidden; flex-direction:column; }
 #chatarea { display:flex; flex:1; overflow:hidden; }
-#messages { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px; }
-#messages::-webkit-scrollbar { width:3px; }
-#messages::-webkit-scrollbar-thumb { background:#1e2540; border-radius:2px; }
-.row { display:flex; gap:8px; align-items:flex-end; }
+
+/* ── CHAT PANEL ── */
+.chat-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.practice-bar {
+  padding: 7px 16px;
+  background: rgba(200,150,12,0.04);
+  border-bottom: 1px solid rgba(200,150,12,0.1);
+  font-size: 11px;
+  color: rgba(200,150,12,0.65);
+  flex-shrink: 0;
+}
+
+/* ── MESSAGES ── */
+#messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+#messages::-webkit-scrollbar { width: 3px; }
+#messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.row { display:flex; gap:10px; align-items:flex-end; animation: msgIn 0.2s ease; }
 .row.user { justify-content:flex-end; }
-.av { width:28px; height:28px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; }
-.av.a { background:linear-gradient(135deg,#1d4ed8,#7c3aed); }
-.av.u { background:#1e2540; border:1px solid #1a2035; }
-.bub { max-width:75%; padding:10px 13px; font-size:13px; line-height:1.6; color:#cbd5e1; }
-.bub.a { background:#111827; border:1px solid #1a2035; border-radius:4px 13px 13px 13px; }
-.bub.u { background:#1e2d50; border:1px solid #2d4a7a; border-radius:13px 13px 4px 13px; }
-.bub.e { background:#1f0f0f; border:1px solid #7f1d1d; color:#fca5a5; border-radius:4px 13px 13px 13px; }
-.dots span { width:6px; height:6px; border-radius:50%; background:#7c3aed; display:inline-block; margin:0 2px; animation:pulse 1.2s ease-in-out infinite; }
+
+@keyframes msgIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+.av {
+  width: 28px; height: 28px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.av.a { background: var(--accent); border: 1px solid var(--border-mid); color: rgba(255,255,255,0.9); font-size: 10px; }
+.av.u { background: var(--user-bg); border: 1px solid var(--user-border); color: var(--text-muted); font-size: 11px; }
+
+.bub {
+  max-width: 72%;
+  padding: 10px 14px;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.bub.a { background: var(--card); border: 1px solid var(--border); border-radius: 4px 12px 12px 12px; color: var(--text); }
+.bub.u { background: var(--user-bg); border: 1px solid var(--user-border); border-radius: 12px 12px 4px 12px; color: var(--text); }
+.bub.e { background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.2); color: #fca5a5; border-radius: 4px 12px 12px 12px; }
+
+.dots { display:flex; align-items:center; gap:3px; padding:2px 0; }
+.dots span { width:5px; height:5px; border-radius:50%; background:var(--accent2); animation:bounce 1.2s ease-in-out infinite; }
 .dots span:nth-child(2){animation-delay:.2s} .dots span:nth-child(3){animation-delay:.4s}
-@keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
-#inputbar { padding:12px 16px; border-top:1px solid #1a2035; display:flex; gap:8px; }
-#msginput { flex:1; background:#0f1320; border:1px solid #1a2035; border-radius:9px; padding:9px 13px; color:#e2e8f0; font-size:13px; outline:none; resize:none; line-height:1.5; font-family:inherit; }
-#msginput:focus { border-color:#2d3a5a; }
-#sendbtn { background:linear-gradient(135deg,#1d4ed8,#7c3aed); border:none; border-radius:9px; padding:0 16px; color:white; cursor:pointer; font-size:20px; }
-#sendbtn:disabled { opacity:.35; cursor:not-allowed; }
-#sidebar { width:280px; background:#0c1018; border-left:1px solid #1a2035; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:10px; }
-#sidebar::-webkit-scrollbar{width:3px;}
-.slabel { font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:#334155; margin-bottom:6px; font-weight:600; }
-#briefcard { background:#080d18; border:1px solid #1e3a5f; border-radius:10px; overflow:hidden; display:none; }
-#briefhead { background:linear-gradient(135deg,#1e3a5f,#0f2040); padding:11px 14px; }
-#brieftag { font-size:10px; color:#60a5fa; letter-spacing:.08em; text-transform:uppercase; margin-bottom:2px; }
-#briefname { font-size:13px; font-weight:600; color:#e2e8f0; }
-#bookedbadge { font-size:10px; font-weight:700; padding:3px 8px; border-radius:14px; margin-top:5px; display:inline-block; }
-.badge-call { background:#22c55e20; border:1px solid #22c55e40; color:#22c55e; }
-.badge-text { background:#f59e0b20; border:1px solid #f59e0b40; color:#f59e0b; }
-.badge-urgent { background:#ef444420; border:1px solid #ef444440; color:#ef4444; }
-.badge-agent { background:#a855f720; border:1px solid #a855f740; color:#a855f7; }
-#briefrows { padding:9px 14px; }
-.br { display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #0f1a2e; font-size:12px; }
-.br:last-child{border-bottom:none;}
-.bl{color:#475569;} .bv{color:#cbd5e1;text-align:right;max-width:58%;}
-#calcbox { margin:0 14px 14px; padding:10px 12px; background:#0a0f1a; border:1px solid #1e3a5f; border-radius:8px; }
-.calc-title { font-size:10px; color:#60a5fa; letter-spacing:.08em; text-transform:uppercase; margin-bottom:8px; }
-.calc-row { display:flex; justify-content:space-between; padding:4px 0; font-size:12px; }
-.calc-label { color:#475569; }
-.calc-val { color:#cbd5e1; font-weight:500; }
-.calc-val.hot { color:#22c55e; font-weight:700; }
-.calc-val.warm { color:#f59e0b; font-weight:700; }
-.calc-val.thin { color:#94a3b8; font-weight:700; }
-.calc-val.dead { color:#ef4444; font-weight:700; }
-.calc-divider { border:none; border-top:1px solid #1a2035; margin:6px 0; }
-#briefph { background:#0f1117; border:1px dashed #1a2035; border-radius:10px; padding:18px 12px; text-align:center; color:#334155; font-size:12px; line-height:1.7; }
-.qr { display:block; width:100%; text-align:left; background:#0c1018; border:1px solid #1a2035; border-radius:7px; padding:7px 10px; color:#64748b; font-size:11px; font-family:inherit; cursor:pointer; margin-bottom:5px; transition:all .15s; line-height:1.4; }
-.qr:hover{color:#a5b4fc;border-color:#2d3a5a;background:#111827;}
-#howbox { background:#0f1117; border:1px solid #1a2035; border-radius:10px; padding:12px; }
-.hw { display:flex; gap:8px; margin-bottom:7px; font-size:11px; color:#64748b; }
-.hw:last-child{margin-bottom:0;}
-#leadloader { background:#0f1320; border:1px solid #2d3a5a; border-radius:10px; padding:12px; }
-#leadfile { display:none; }
-#loadleadbtn { width:100%; background:#0c1018; border:1px dashed #2d3a5a; border-radius:7px; padding:8px; color:#475569; font-size:11px; cursor:pointer; text-align:center; font-family:inherit; }
-#loadleadbtn:hover { color:#a5b4fc; border-color:#4a5a8a; }
-#leadstatus { font-size:11px; color:#4ade80; margin-top:6px; display:none; }
-#leadcount { font-size:10px; color:#475569; margin-top:3px; }
-#followupbox { background:#0f1320; border:1px solid #2d3a5a; border-radius:10px; padding:12px; }
-.fu-item { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid #0f1a2e; font-size:11px; }
+@keyframes bounce { 0%,100%{opacity:.3;transform:translateY(0)} 50%{opacity:1;transform:translateY(-3px)} }
+
+/* ── INPUT ── */
+#inputbar {
+  padding: 12px 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+#msginput {
+  flex: 1;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 13px;
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+  resize: none;
+  line-height: 1.55;
+  font-family: inherit;
+  transition: border-color 0.15s;
+  max-height: 120px;
+}
+
+#msginput:focus { border-color: var(--accent2); }
+#msginput::placeholder { color: var(--text-dim); }
+
+#sendbtn {
+  background: var(--accent);
+  border: none;
+  border-radius: 10px;
+  width: 38px; height: 38px;
+  color: rgba(255,255,255,0.9);
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+#sendbtn:hover:not(:disabled) { background: var(--accent2); }
+#sendbtn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* ── SIDEBAR ── */
+#sidebar {
+  width: 272px;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+#sidebar::-webkit-scrollbar { width: 2px; }
+#sidebar::-webkit-scrollbar-thumb { background: var(--border); }
+
+.slabel {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 7px;
+  font-weight: 600;
+}
+
+/* ── LEAD LOADER ── */
+#leadloader { background:var(--card); border:1px solid var(--border); border-radius:9px; padding:12px; }
+
+#loadleadbtn {
+  width: 100%;
+  background: transparent;
+  border: 1px dashed var(--border-mid);
+  border-radius: 7px;
+  padding: 9px;
+  color: var(--text-muted);
+  font-size: 11px;
+  cursor: pointer;
+  text-align: center;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+#loadleadbtn:hover { color: var(--text); border-color: var(--accent2); }
+#leadfile { display: none; }
+#leadstatus { font-size:11px; color:var(--green); margin-top:7px; display:none; font-weight:500; }
+#leadcount  { font-size:10px; color:var(--text-muted); margin-top:3px; }
+
+/* ── BRIEF CARD ── */
+#briefph {
+  background: var(--card);
+  border: 1px dashed var(--border);
+  border-radius: 9px;
+  padding: 20px 14px;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 11px;
+  line-height: 1.75;
+}
+
+#briefcard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  overflow: hidden;
+  display: none;
+  transition: border-color 0.2s;
+}
+
+#briefhead { background: linear-gradient(135deg, var(--accent), #0f2418); padding:12px 14px; }
+#brieftag  { font-size:9px; color:rgba(255,255,255,0.4); letter-spacing:.12em; text-transform:uppercase; margin-bottom:3px; }
+#briefname { font-size:13px; font-weight:600; color:rgba(255,255,255,0.9); line-height:1.3; }
+
+#bookedbadge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 12px;
+  margin-top: 7px;
+  display: inline-block;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.badge-call   { background:rgba(34,197,94,0.12);  border:1px solid rgba(34,197,94,0.25);  color:var(--green); }
+.badge-text   { background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.25); color:var(--amber); }
+.badge-urgent { background:rgba(239,68,68,0.12);  border:1px solid rgba(239,68,68,0.25);  color:var(--red); }
+.badge-agent  { background:rgba(168,85,247,0.12); border:1px solid rgba(168,85,247,0.25); color:var(--purple); }
+
+#briefrows { padding:10px 14px; }
+
+.br {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 11px;
+  gap: 8px;
+}
+
+.br:last-child { border-bottom: none; }
+.bl { color:var(--text-muted); flex-shrink:0; }
+.bv { color:var(--text); text-align:right; flex:1; word-break:break-word; }
+
+/* ── CALC BOX ── */
+#calcbox {
+  margin: 0 14px 14px;
+  padding: 10px 12px;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+}
+
+.calc-title { font-size:9px; color:var(--gold); letter-spacing:.12em; text-transform:uppercase; margin-bottom:9px; font-weight:600; }
+.calc-row   { display:flex; justify-content:space-between; padding:4px 0; font-size:11px; }
+.calc-label { color:var(--text-muted); }
+.calc-val   { color:var(--text); font-weight:500; }
+.calc-val.hot  { color:var(--green); font-weight:700; }
+.calc-val.warm { color:var(--amber); font-weight:700; }
+.calc-val.thin { color:var(--text-muted); font-weight:700; }
+.calc-val.dead { color:var(--red); font-weight:700; }
+.calc-divider  { border:none; border-top:1px solid var(--border); margin:6px 0; }
+
+/* ── QUICK REPLIES ── */
+.qr {
+  display: block; width:100%; text-align:left;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 7px 10px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-family: inherit;
+  cursor: pointer;
+  margin-bottom: 5px;
+  transition: all 0.14s;
+  line-height: 1.45;
+}
+
+.qr:hover { color:var(--text); border-color:var(--accent2); background:rgba(28,61,44,0.15); }
+
+/* ── HOW IT WORKS ── */
+#howbox { background:var(--card); border:1px solid var(--border); border-radius:9px; padding:12px 14px; }
+
+.hw { display:flex; gap:9px; margin-bottom:8px; font-size:11px; color:var(--text-muted); line-height:1.5; }
+.hw:last-child { margin-bottom:0; }
+
+/* ── FOLLOW-UP ── */
+#followupbox { background:var(--card); border:1px solid var(--border); border-radius:9px; padding:12px; }
+
+.fu-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 11px;
+  gap: 6px;
+}
+
 .fu-item:last-child { border-bottom:none; }
-.fu-day { color:#60a5fa; font-weight:600; min-width:40px; }
-.fu-msg { color:#475569; flex:1; padding:0 8px; line-height:1.4; }
-.fu-status { font-size:10px; padding:2px 7px; border-radius:10px; }
-.fu-pending { background:#1e293b; color:#475569; }
-.fu-sent { background:#22c55e20; border:1px solid #22c55e40; color:#22c55e; }
-.fu-replied { background:#f59e0b20; border:1px solid #f59e0b40; color:#f59e0b; }
-#fusimbtn { width:100%; margin-top:8px; background:#0c1018; border:1px solid #2d3a5a; border-radius:7px; padding:7px; color:#475569; font-size:11px; cursor:pointer; font-family:inherit; }
-#fusimbtn:hover { color:#a5b4fc; border-color:#4a5a8a; }
-@keyframes hotpulse { 0%,100%{box-shadow:0 0 0 0 #ef444440} 50%{box-shadow:0 0 0 8px #ef444400} }
-.hot-alert { animation: hotpulse 1.5s ease-in-out infinite; border-color:#ef4444 !important; }
+.fu-day   { color:var(--gold); font-weight:600; min-width:38px; }
+.fu-msg   { color:var(--text-muted); flex:1; line-height:1.4; }
+.fu-status { font-size:9px; padding:2px 7px; border-radius:10px; text-transform:uppercase; letter-spacing:.04em; flex-shrink:0; }
+.fu-pending { background:var(--card); color:var(--text-dim); border:1px solid var(--border); }
+.fu-sent    { background:rgba(34,197,94,0.08);  border:1px solid rgba(34,197,94,0.2);  color:var(--green); }
+.fu-replied { background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2); color:var(--amber); }
+
+#fusimbtn {
+  width:100%; margin-top:9px;
+  background:transparent; border:1px solid var(--border-mid);
+  border-radius:7px; padding:7px;
+  color:var(--text-muted); font-size:11px;
+  cursor:pointer; font-family:inherit; transition:all 0.15s; font-weight:500;
+}
+
+#fusimbtn:hover { color:var(--text); border-color:var(--accent2); background:rgba(28,61,44,0.15); }
+
+/* ── HOT ALERT ── */
+@keyframes hotpulse { 0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.3)} 50%{box-shadow:0 0 0 6px rgba(239,68,68,0)} }
+.hot-alert { animation:hotpulse 1.5s ease-in-out infinite; border-color:var(--red) !important; }
 </style>
 </head>
 <body>
 
 <div id="topbar">
-  <div id="logo">&#127959;</div>
-  <div><div id="appname">D&O Property Group</div><div id="appsub">AI Acquisition Agent · Houston, TX</div></div>
-  <button id="newbtn" onclick="resetChat()">New lead</button>
+  <div class="logo-mark">D&O</div>
+  <div>
+    <div class="brand-name">D&amp;O Property Group</div>
+    <div class="brand-sub">Sofia AI Acquisition Agent &nbsp;·&nbsp; Houston, TX</div>
+  </div>
+  <button id="newbtn" onclick="resetChat()">+ New Lead</button>
 </div>
 
 <div id="app">
   <div id="statusbar">
-    <span>&#10003; Sofia is live · EN / ES</span>
-    <span id="hotbanner" style="color:#ef4444;font-weight:700;display:none;">&#9889; HOT LEAD — DIEGO CALL NOW</span>
+    <span><span class="dot"></span>Sofia is live &nbsp;·&nbsp; EN / ES</span>
+    <span id="hotbanner">⚡ HOT LEAD — DIEGO CALL NOW</span>
   </div>
+
   <div id="chatarea">
-    <div style="flex:1;display:flex;flex-direction:column;border-right:1px solid #1a2035;">
-      <div style="padding:6px 16px;background:#0a1020;border-bottom:1px solid #1a2035;font-size:11px;color:#60a5fa;">
-        &#127919; Practice mode — type as the seller in English or Spanish. Sofia auto-detects.
+    <div class="chat-panel">
+      <div class="practice-bar">
+        ◎ &nbsp;Practice mode — type as the seller in English or Spanish. Sofia auto-detects.
       </div>
       <div id="messages"></div>
       <div id="inputbar">
-        <textarea id="msginput" rows="2" placeholder="Type as the seller… English or Spanish (Enter to send)"></textarea>
+        <textarea id="msginput" rows="2" placeholder="Type as the seller… (Enter to send, Shift+Enter for new line)"></textarea>
         <button id="sendbtn" onclick="send()">&#8594;</button>
       </div>
     </div>
+
     <div id="sidebar">
       <div id="leadloader">
-        <div class="slabel">&#128196; Load lead list (CSV)</div>
-        <button id="loadleadbtn" onclick="document.getElementById('leadfile').click()">&#8593; Upload CSV from DealMachine</button>
+        <div class="slabel">Load Lead List</div>
+        <button id="loadleadbtn" onclick="document.getElementById('leadfile').click()">&#8593; &nbsp;Upload CSV from DealMachine</button>
         <input type="file" id="leadfile" accept=".csv" onchange="loadCSV(event)" />
         <div id="leadstatus"></div>
         <div id="leadcount"></div>
       </div>
+
       <div id="briefcard">
         <div id="briefhead">
-          <div id="brieftag">Lead brief</div>
+          <div id="brieftag">Lead Brief</div>
           <div id="briefname">—</div>
-          <div id="bookedbadge" class="badge-call">&#128222; CALL BOOKED</div>
+          <div id="bookedbadge" class="badge-call">&#128222; Call Booked</div>
         </div>
         <div id="briefrows"></div>
         <div id="calcbox">
-          <div class="calc-title">Wholesaler analysis</div>
+          <div class="calc-title">Deal Analysis</div>
           <div id="calcrows"></div>
         </div>
       </div>
-      <div id="briefph">&#128203; Lead brief and deal analysis appear here once Sofia qualifies the seller.</div>
+
+      <div id="briefph">Lead brief and deal analysis appear here once Sofia qualifies the seller.</div>
+
       <div id="qrsection">
-        <div class="slabel">Quick seller replies</div>
+        <div class="slabel">Quick Seller Replies</div>
         <div id="qrbox"></div>
       </div>
+
       <div id="howbox">
-        <div class="slabel">How this works</div>
-        <div class="hw"><span>&#127919;</span>Sofia qualifies in EN or ES</div>
+        <div class="slabel">How This Works</div>
+        <div class="hw"><span>◎</span>Sofia qualifies in EN or ES</div>
         <div class="hw"><span>&#128197;</span>Call or text offer — seller picks</div>
         <div class="hw"><span>&#128203;</span>Full deal analysis generated</div>
         <div class="hw"><span>&#9889;</span>Hot lead? Diego gets alerted instantly</div>
       </div>
+
       <div id="followupbox" style="display:none;">
-        <div class="slabel">&#9200; Follow-up cadence</div>
+        <div class="slabel">Follow-Up Cadence</div>
         <div id="fulist"></div>
         <button id="fusimbtn" onclick="simulateFollowUp()">&#9889; Simulate next follow-up</button>
       </div>
@@ -154,6 +501,28 @@ body { background: #080b12; color: #e2e8f0; font-family: 'Segoe UI', sans-serif;
 
 <script>
 const MAKE_WEBHOOK = "https://hook.us2.make.com/5hdgapnpzhimd9ktarrovfkkc695krxx";
+
+// DEMO MODE — sequential Sofia script for local/preview testing
+const DEMO_SCRIPT = [
+  "Got it! Quick question — are you the owner of the property, or are you a property manager or agent?",
+  "Perfect! What's the property address you're looking to sell?",
+  "Got it. How many bedrooms and bathrooms does the property have?",
+  "Thanks! What's your main reason for selling right now?",
+  "Understood. How soon are you looking to close — do you have a timeline in mind?",
+  "And how would you describe the condition of the property — great, good, needs some work, or major repairs needed?",
+  "Got it. What are you hoping to get for it? Just a ballpark is totally fine.",
+  "And do you have a mortgage on the property? If so, roughly how much do you still owe?",
+  "Perfect. Would you prefer a quick 15-minute call with Diego, or would you like me to put together a ballpark offer right here over text?",
+  "Sounds good! What time works best for Diego to call you — morning or afternoon?",
+  "Perfect! Diego will call you at that time. No pressure at all. 👍"
+];
+let demoIdx = 0;
+
+async function demoReply() {
+  await new Promise(r => setTimeout(r, 900 + Math.random() * 600));
+  const reply = DEMO_SCRIPT[Math.min(demoIdx++, DEMO_SCRIPT.length - 1)];
+  return { reply, isHotAlert: false, delayedReply: null };
+}
 
 const QUICK_EN = [
   "Yes this is me","I'm the owner","I'm a property manager","I inherited a property",
@@ -168,9 +537,9 @@ const QUICK_ES = [
   "Prefiero una oferta por mensaje","Ese número no me funciona"
 ];
 const FOLLOWUPS = [
-  { day:2, msg_en:"Hey [NAME]! Just wanted to follow up — still interested in a cash offer? No pressure 🙂", msg_es:"Hola [NAME]! Solo quería hacer seguimiento — ¿sigue interesado en una oferta en efectivo? Sin presión 🙂" },
-  { day:5, msg_en:"Hi [NAME], still open to chatting about your property? We're actively buying in your area.", msg_es:"Hola [NAME], ¿sigue abierto a hablar sobre su propiedad? Estamos comprando activamente en su área." },
-  { day:10, msg_en:"Hey [NAME] — last follow-up from me! If timing ever works, we'd love to make you a cash offer 🤙", msg_es:"Hola [NAME] — último seguimiento! Si alguna vez el momento es adecuado, nos encantaría hacer una oferta 🤙" },
+  { day:2,  msg_en:"Hey [NAME]! Just wanted to follow up — still interested in a cash offer? No pressure.", msg_es:"Hola [NAME]! Solo quería hacer seguimiento — ¿sigue interesado en una oferta en efectivo?" },
+  { day:5,  msg_en:"Hi [NAME], still open to chatting about your property? We're actively buying in your area.", msg_es:"Hola [NAME], ¿sigue abierto a hablar sobre su propiedad? Estamos comprando activamente en su área." },
+  { day:10, msg_en:"Hey [NAME] — last follow-up! If timing ever works, we'd love to make you a cash offer.", msg_es:"Hola [NAME] — último seguimiento. Si el momento es adecuado, nos encantaría hacer una oferta." }
 ];
 
 let history = [], busy = false, lang = "en";
@@ -188,27 +557,35 @@ function renderFollowUps() {
   document.getElementById("fulist").innerHTML = followUpState.map(f => {
     const msg = (lang==="es" ? f.msg_es : f.msg_en).replace("[NAME]", currentSellerName);
     const statusLabel = f.status==="sent" ? "Sent" : f.status==="replied" ? "Replied ⚡" : "Pending";
-    const statusClass = f.status==="sent" ? "fu-sent" : f.status==="replied" ? "fu-replied" : "fu-pending";
-    return `<div class="fu-item"><span class="fu-day">Day ${f.day}</span><span class="fu-msg">${msg.substring(0,50)}...</span><span class="fu-status ${statusClass}">${statusLabel}</span></div>`;
+    const statusClass = "fu-status fu-" + f.status;
+    return `<div class="fu-item"><span class="fu-day">Day ${f.day}</span><span class="fu-msg">${msg.substring(0,48)}…</span><span class="${statusClass}">${statusLabel}</span></div>`;
   }).join("");
 }
 
 function simulateFollowUp() {
   const idx = followUpState.findIndex(f => f.status==="pending");
-  if (idx===-1) { document.getElementById("fusimbtn").textContent="✅ All sent"; document.getElementById("fusimbtn").disabled=true; return; }
+  if (idx === -1) {
+    document.getElementById("fusimbtn").textContent = "✓ All sent";
+    document.getElementById("fusimbtn").disabled = true;
+    return;
+  }
   const msg = (lang==="es" ? followUpState[idx].msg_es : followUpState[idx].msg_en).replace("[NAME]", currentSellerName);
   followUpState[idx].status = "sent";
   history.push({ role:"assistant", content:msg });
   renderMsgs(); renderFollowUps();
-  if (idx===followUpState.length-1) { document.getElementById("fusimbtn").textContent="✅ All sent"; document.getElementById("fusimbtn").disabled=true; }
+  if (idx === followUpState.length - 1) {
+    document.getElementById("fusimbtn").textContent = "✓ All sent";
+    document.getElementById("fusimbtn").disabled = true;
+  }
 }
 
 function markFollowUpReplied() {
   const idx = followUpState.findIndex(f => f.status==="sent");
-  if (idx!==-1) {
+  if (idx !== -1) {
     followUpState[idx].status = "replied";
     renderFollowUps();
-    fetch(MAKE_WEBHOOK, { method:"POST", headers:{"Content-Type":"application/json"},
+    fetch(MAKE_WEBHOOK, {
+      method:"POST", headers:{"Content-Type":"application/json"},
       body: JSON.stringify({ event:"FOLLOW_UP_REPLY", seller:currentSellerName, followup_day:followUpState[idx].day })
     }).catch(()=>{});
   }
@@ -223,19 +600,20 @@ function loadCSV(event) {
     if (lines.length < 2) return;
     const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g,''));
     leads = [];
-    for (let i=1; i<lines.length; i++) {
+    for (let i = 1; i < lines.length; i++) {
       const vals = lines[i].split(',').map(v => v.trim().replace(/"/g,''));
       const row = {};
-      headers.forEach((h,idx) => { row[h] = vals[idx] || ''; });
-      const name = row['owner name']||row['owner']||row['contact name']||row['name']||'';
+      headers.forEach((h, idx) => { row[h] = vals[idx] || ''; });
+      const name    = row['owner name']||row['owner']||row['contact name']||row['name']||'';
       const address = row['property address']||row['address']||row['street address']||'';
-      const phone = row['phone']||row['phone number']||row['mobile']||'';
-      if (name||address) leads.push({ name, address, phone, raw:row });
+      const phone   = row['phone']||row['phone number']||row['mobile']||'';
+      if (name || address) leads.push({ name, address, phone, raw:row });
     }
-    document.getElementById('leadstatus').style.display='block';
-    document.getElementById('leadstatus').textContent='✓ Lead list loaded';
-    document.getElementById('leadcount').textContent=leads.length+' leads ready';
-    if (leads.length>0) { currentLead=leads[0]; init(); }
+    const statusEl = document.getElementById('leadstatus');
+    statusEl.style.display = 'block';
+    statusEl.textContent = '✓ Lead list loaded';
+    document.getElementById('leadcount').textContent = leads.length + ' leads ready';
+    if (leads.length > 0) { currentLead = leads[0]; init(); }
   };
   reader.readAsText(file);
 }
@@ -244,7 +622,7 @@ function getRepairCost(condition) {
   if (!condition) return 25000;
   const c = condition.toLowerCase();
   if (c.includes("great")) return 0;
-  if (c.includes("good")) return 10000;
+  if (c.includes("good"))  return 10000;
   if (c.includes("major")) return 45000;
   return 25000;
 }
@@ -252,34 +630,39 @@ function getRepairCost(condition) {
 function calcDeal(asking, condition, owed) {
   const a = parseFloat(asking)||0, o = parseFloat(owed)||0;
   const repairs = getRepairCost(condition);
-  const arvLow = Math.round(a/0.65/1000)*1000;
-  const mao = Math.round(arvLow*0.70)-repairs;
-  const offerLow = Math.round(mao*0.68/1000)*1000;
-  const offerHigh = Math.round(mao*0.74/1000)*1000;
-  const assignFee = Math.max(0,Math.round((mao-a)*0.6/1000)*1000);
-  const spread = mao-a;
+  const arvLow    = Math.round(a / 0.65 / 1000) * 1000;
+  const mao       = Math.round(arvLow * 0.70) - repairs;
+  const offerLow  = Math.round(mao * 0.68 / 1000) * 1000;
+  const offerHigh = Math.round(mao * 0.74 / 1000) * 1000;
+  const assignFee = Math.max(0, Math.round((mao - a) * 0.6 / 1000) * 1000);
+  const spread = mao - a;
   let score, scoreClass;
-  if (spread>20000){score="HOT 🔥";scoreClass="hot";}
-  else if (spread>5000){score="WARM";scoreClass="warm";}
-  else if (spread>=0){score="THIN";scoreClass="thin";}
-  else{score="DEAD";scoreClass="dead";}
+  if      (spread > 20000) { score = "HOT 🔥"; scoreClass = "hot"; }
+  else if (spread > 5000)  { score = "WARM";   scoreClass = "warm"; }
+  else if (spread >= 0)    { score = "THIN";   scoreClass = "thin"; }
+  else                     { score = "DEAD";   scoreClass = "dead"; }
   return { arvLow, mao, offerLow, offerHigh, assignFee, repairs, equity:a-o, spread, score, scoreClass };
 }
 
-function fmt(n) { const v=parseFloat(n); if(isNaN(v))return"—"; if(v===0)return"$0"; return"$"+Math.round(v).toLocaleString(); }
+function fmt(n) {
+  const v = parseFloat(n);
+  if (isNaN(v)) return "—";
+  if (v === 0)  return "$0";
+  return "$" + Math.round(v).toLocaleString();
+}
 
 function renderMsgs() {
   const box = document.getElementById("messages");
   box.innerHTML = "";
   history.forEach(m => {
     const row = document.createElement("div");
-    row.className = "row "+m.role;
+    row.className = "row " + m.role;
     const clean = (m.content||"").replace(/\[LEAD[^\]]*\]/g,"").trim();
     const isWaiting = m.role==="assistant" && !clean && busy;
-    if (m.role==="assistant") {
-      row.innerHTML = `<div class="av a">&#127959;</div><div class="bub ${m.err?'e':'a'}">${isWaiting?'<div class="dots"><span></span><span></span><span></span></div>':(clean||"...")}</div>`;
+    if (m.role === "assistant") {
+      row.innerHTML = `<div class="av a">S</div><div class="bub ${m.err?'e':'a'}">${isWaiting ? '<div class="dots"><span></span><span></span><span></span></div>' : (clean || "…")}</div>`;
     } else {
-      row.innerHTML = `<div class="bub u">${clean}</div><div class="av u">&#128100;</div>`;
+      row.innerHTML = `<div class="bub u">${clean}</div><div class="av u">U</div>`;
     }
     box.appendChild(row);
   });
@@ -289,17 +672,17 @@ function renderMsgs() {
 function renderQR() {
   const box = document.getElementById("qrbox");
   box.innerHTML = "";
-  (lang==="es"?QUICK_ES:QUICK_EN).forEach(q => {
+  (lang==="es" ? QUICK_ES : QUICK_EN).forEach(q => {
     const b = document.createElement("button");
-    b.className="qr"; b.textContent=q;
-    b.onclick=()=>send(q);
+    b.className = "qr"; b.textContent = q;
+    b.onclick = () => send(q);
     box.appendChild(b);
   });
 }
 
 function detectLang(text) {
-  const sw=["hola","quiero","vender","casa","herede","necesito","pido","debo","manana","mañana","atrasado","gracias","tengo","precio","cuanto","propiedad","soy","dueño","dueno","sí","administrador"];
-  return sw.some(w=>text.toLowerCase().includes(w))?"es":"en";
+  const sw = ["hola","quiero","vender","casa","herede","necesito","pido","debo","manana","mañana","atrasado","gracias","tengo","precio","cuanto","propiedad","soy","dueño","dueno","sí","administrador"];
+  return sw.some(w => text.toLowerCase().includes(w)) ? "es" : "en";
 }
 
 function init() {
@@ -309,95 +692,107 @@ function init() {
     : "Hi! This is Sofia from D&O Property Group — may I ask who I'm speaking with? 👋 / Hola! Soy Sofia de D&O Property Group — ¿con quién hablo? 👋";
   history = [{ role:"assistant", content:openingMsg }];
   followUpState = []; currentSellerName = "";
-  document.getElementById("briefcard").style.display="none";
-  document.getElementById("briefph").style.display="block";
-  document.getElementById("qrsection").style.display="block";
-  document.getElementById("followupbox").style.display="none";
-  document.getElementById("hotbanner").style.display="none";
+  document.getElementById("briefcard").style.display   = "none";
+  document.getElementById("briefph").style.display     = "block";
+  document.getElementById("qrsection").style.display   = "block";
+  document.getElementById("followupbox").style.display  = "none";
+  document.getElementById("hotbanner").style.display   = "none";
   document.getElementById("briefcard").classList.remove("hot-alert");
-  document.getElementById("fusimbtn").textContent="⚡ Simulate next follow-up";
-  document.getElementById("fusimbtn").disabled=false;
+  document.getElementById("fusimbtn").textContent = "⚡ Simulate next follow-up";
+  document.getElementById("fusimbtn").disabled = false;
   renderMsgs(); renderQR();
 }
 
 async function send(pre) {
   if (busy) return;
   const inp = document.getElementById("msginput");
-  const txt = (pre||inp.value).trim();
+  const txt = (pre || inp.value).trim();
   if (!txt) return;
   inp.value = "";
 
-  if (history.length===1) { lang=detectLang(txt); renderQR(); }
-  if (followUpState.some(f=>f.status==="sent")) markFollowUpReplied();
+  if (history.length === 1) { lang = detectLang(txt); renderQR(); }
+  if (followUpState.some(f => f.status==="sent")) markFollowUpReplied();
 
-  history.push({ role:"user", content:txt });
-  history.push({ role:"assistant", content:"" });
+  history.push({ role:"user",      content:txt });
+  history.push({ role:"assistant", content:""  });
   busy = true;
   document.getElementById("sendbtn").disabled = true;
   renderMsgs();
 
   try {
-    // Build messages — CRITICAL: Anthropic requires first message to be "user" role
-    // Strip the opening assistant greeting from API call, only send user/assistant pairs
     const apiMessages = history
       .slice(0, -1)
-      .filter(m => m.content && m.content.trim() !== "")
+      .filter(m => m.content && m.content.trim())
       .filter((m, idx, arr) => {
-        // Remove leading assistant messages
         const firstUserIdx = arr.findIndex(x => x.role === "user");
         return idx >= firstUserIdx;
       })
-      .map(m => ({ role: m.role, content: m.content }));
+      .map(m => ({ role:m.role, content:m.content }));
 
-    const res = await fetch("/api/chat", {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({
-        messages: apiMessages,
-        leadData: currentLead || null
-      })
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(()=>({}));
-      throw new Error(err?.error || "Server error "+res.status);
+    let data;
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify({ messages:apiMessages, leadData:currentLead||null })
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(()=>({}));
+        throw new Error(err?.error || "Server error " + res.status);
+      }
+      data = await res.json();
+    } catch (fetchErr) {
+      // API unavailable — fall back to demo mode
+      data = await demoReply();
+      if (!document.getElementById("demobanner")) {
+        const bar = document.getElementById("statusbar");
+        const badge = document.createElement("span");
+        badge.id = "demobanner";
+        badge.style.cssText = "color:var(--amber);font-size:10px;font-weight:600;letter-spacing:.04em;";
+        badge.textContent = "⚠ DEMO MODE — deploy to Vercel for live AI";
+        bar.appendChild(badge);
+      }
     }
-
-    const data = await res.json();
     const full = data.reply || "";
     history[history.length-1].content = full;
 
     if (data.isHotAlert) {
-      document.getElementById("hotbanner").style.display="block";
+      document.getElementById("hotbanner").style.display = "block";
       document.getElementById("briefcard").classList.add("hot-alert");
     }
 
     renderMsgs();
 
-    // If Sofia has a delayed second message (offer presentation), send it after a pause
     if (data.delayedReply) {
-      await new Promise(resolve => setTimeout(resolve, data.delayMs || 4000));
-      history.push({ role:"assistant", content: data.delayedReply });
+      await new Promise(r => setTimeout(r, data.delayMs || 4000));
+      history.push({ role:"assistant", content:data.delayedReply });
       renderMsgs();
     }
 
-    if (history.filter(m=>m.role==="user").length===1 && !followUpState.length) {
+    if (history.filter(m => m.role==="user").length === 1 && !followUpState.length) {
       initFollowUps(txt.split(" ")[0]);
     }
 
     const m = full.match(/\[LEAD([^\]]+)\]/);
     if (m) {
       const raw = m[1];
-      const get = k => { const r=raw.match(new RegExp(k+"=([^=\\[\\]]+?)(?=\\s+\\w+=|$)")); return r?r[1].trim():null; };
-      const lead = { name:get("name"), address:get("address"), motivation:get("motivation"), timeline:get("timeline"), condition:get("condition"), asking:get("asking"), owed:get("owed"), calltime:get("calltime"), preference:get("preference"), email:get("email") };
+      const get = k => { const r = raw.match(new RegExp(k+"=([^=\\[\\]]+?)(?=\\s+\\w+=|$)")); return r ? r[1].trim() : null; };
+      const lead = {
+        name:get("name"), address:get("address"), motivation:get("motivation"),
+        timeline:get("timeline"), condition:get("condition"), asking:get("asking"),
+        owed:get("owed"), calltime:get("calltime"), preference:get("preference"), email:get("email")
+      };
       showBrief(lead);
-      if (lead.name) { currentSellerName=lead.name; renderFollowUps(); }
+      if (lead.name) { currentSellerName = lead.name; renderFollowUps(); }
       const calc = calcDeal(lead.asking, lead.condition, lead.owed);
-      fetch(MAKE_WEBHOOK, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ date:new Date().toLocaleDateString(), ...lead, language:lang, deal_score:calc.score }) }).catch(()=>{});
+      fetch(MAKE_WEBHOOK, {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ date:new Date().toLocaleDateString(), ...lead, language:lang, deal_score:calc.score })
+      }).catch(()=>{});
     }
 
   } catch(e) {
-    history[history.length-1].content = "Error: "+e.message;
+    history[history.length-1].content = "Error: " + e.message;
     history[history.length-1].err = true;
     renderMsgs();
   }
@@ -408,36 +803,70 @@ async function send(pre) {
 }
 
 function showBrief(lead) {
-  document.getElementById("briefph").style.display="none";
-  document.getElementById("qrsection").style.display="none";
-  document.getElementById("briefcard").style.display="block";
-  const pref=(lead.preference||"").toUpperCase();
-  const isUrgent=pref.includes("URGENT"), isText=pref.includes("TEXT")||pref.includes("TEXTO"), isAgent=pref.includes("AGENT");
-  const badge=document.getElementById("bookedbadge");
-  if(isUrgent){badge.textContent="⚡ URGENT — GET DIEGO ON NOW";badge.className="bookedbadge badge-urgent";}
-  else if(isAgent){badge.textContent="🤝 AGENT REFERRAL";badge.className="bookedbadge badge-agent";}
-  else if(isText){badge.textContent="✅ TEXT OFFER ACCEPTED";badge.className="bookedbadge badge-text";}
-  else{badge.textContent="📞 CALL BOOKED";badge.className="bookedbadge badge-call";}
-  document.getElementById("briefname").textContent=(lead.name||"Seller")+" — "+(isUrgent?"CALL ASAP":(lead.calltime||"TBD"));
-  const rows=[["Property",lead.address],["Motivation",lead.motivation],["Timeline",lead.timeline],["Condition",lead.condition],["Asking price",fmt(lead.asking)],["Mortgage owed",fmt(lead.owed)],["Email",lead.email],["Call time",isUrgent?"ASAP — seller ready NOW":lead.calltime],["Preference",isAgent?"Agent referral":isUrgent?"URGENT call":isText?"Text offer accepted":"Phone call"]];
-  document.getElementById("briefrows").innerHTML=rows.filter(r=>r[1]).map(([l,v])=>`<div class="br"><span class="bl">${l}</span><span class="bv" style="${l==='Call time'&&isUrgent?'color:#ef4444;font-weight:700':''}">${v}</span></div>`).join("");
-  if(!isAgent){
-    document.getElementById("calcbox").style.display="block";
-    const calc=calcDeal(lead.asking,lead.condition,lead.owed);
-    const calcRows=[["Est. ARV",fmt(calc.arvLow)],["Repair estimate",fmt(calc.repairs)],["MAO (70% rule)",fmt(calc.mao)],["divider",""],["Your offer range",`${fmt(calc.offerLow)} – ${fmt(calc.offerHigh)}`],["Est. assignment fee",fmt(calc.assignFee)],["Seller equity",fmt(calc.equity)],["Spread",fmt(calc.spread)],["divider",""],["Deal score",calc.score]];
-    document.getElementById("calcrows").innerHTML=calcRows.map(([l,v])=>{if(l==="divider")return`<hr class="calc-divider">`;const cls=l==="Deal score"?`calc-val ${calc.scoreClass}`:"calc-val";return`<div class="calc-row"><span class="calc-label">${l}</span><span class="${cls}">${v}</span></div>`;}).join("");
-  } else { document.getElementById("calcbox").style.display="none"; }
+  document.getElementById("briefph").style.display    = "none";
+  document.getElementById("qrsection").style.display  = "none";
+  document.getElementById("briefcard").style.display  = "block";
+  const pref     = (lead.preference||"").toUpperCase();
+  const isUrgent = pref.includes("URGENT");
+  const isText   = pref.includes("TEXT") || pref.includes("TEXTO");
+  const isAgent  = pref.includes("AGENT");
+  const badge = document.getElementById("bookedbadge");
+  if      (isUrgent) { badge.textContent = "⚡ URGENT — CALL NOW";   badge.className = "bookedbadge badge-urgent"; }
+  else if (isAgent)  { badge.textContent = "🤝 Agent Referral";       badge.className = "bookedbadge badge-agent"; }
+  else if (isText)   { badge.textContent = "✅ Text Offer Accepted";  badge.className = "bookedbadge badge-text"; }
+  else               { badge.textContent = "📞 Call Booked";          badge.className = "bookedbadge badge-call"; }
+  document.getElementById("briefname").textContent = (lead.name||"Seller") + " — " + (isUrgent ? "CALL ASAP" : (lead.calltime||"TBD"));
+  const rows = [
+    ["Property",   lead.address],
+    ["Motivation", lead.motivation],
+    ["Timeline",   lead.timeline],
+    ["Condition",  lead.condition],
+    ["Asking",     fmt(lead.asking)],
+    ["Mortgage",   fmt(lead.owed)],
+    ["Email",      lead.email],
+    ["Call time",  isUrgent ? "ASAP — seller ready" : lead.calltime],
+    ["Preference", isAgent ? "Agent referral" : isUrgent ? "Urgent call" : isText ? "Text offer" : "Phone call"]
+  ];
+  document.getElementById("briefrows").innerHTML = rows
+    .filter(r => r[1])
+    .map(([l,v]) => `<div class="br"><span class="bl">${l}</span><span class="bv"${l==="Call time"&&isUrgent?' style="color:var(--red);font-weight:600"':''}>${v}</span></div>`)
+    .join("");
+  if (!isAgent) {
+    document.getElementById("calcbox").style.display = "block";
+    const calc = calcDeal(lead.asking, lead.condition, lead.owed);
+    const calcRows = [
+      ["Est. ARV",       fmt(calc.arvLow)],
+      ["Repair est.",    fmt(calc.repairs)],
+      ["MAO (70% rule)", fmt(calc.mao)],
+      ["divider",""],
+      ["Offer range",    `${fmt(calc.offerLow)} – ${fmt(calc.offerHigh)}`],
+      ["Assign fee",     fmt(calc.assignFee)],
+      ["Seller equity",  fmt(calc.equity)],
+      ["Spread",         fmt(calc.spread)],
+      ["divider",""],
+      ["Deal score",     calc.score]
+    ];
+    document.getElementById("calcrows").innerHTML = calcRows.map(([l,v]) => {
+      if (l === "divider") return `<hr class="calc-divider">`;
+      const cls = l === "Deal score" ? `calc-val ${calc.scoreClass}` : "calc-val";
+      return `<div class="calc-row"><span class="calc-label">${l}</span><span class="${cls}">${v}</span></div>`;
+    }).join("");
+  } else {
+    document.getElementById("calcbox").style.display = "none";
+  }
 }
 
 function resetChat() {
-  currentLead=leads.length>0?leads[0]:null;
-  followUpState=[]; currentSellerName="";
+  currentLead = leads.length > 0 ? leads[0] : null;
+  followUpState = []; currentSellerName = "";
   document.getElementById("briefcard").classList.remove("hot-alert");
   init();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("msginput").addEventListener("keydown", e=>{ if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();} });
+  document.getElementById("msginput").addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
+  });
   init();
 });
 </script>

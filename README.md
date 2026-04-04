@@ -1,1 +1,1 @@
-# D&O Property Group.
+# D&O Property Group
